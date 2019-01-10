@@ -1,4 +1,3 @@
-drop LHE*
 drop Tau*
 
 drop CaloMET*
