@@ -1,5 +1,6 @@
 import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
+from ROOT import TLorentzVector
 
 import os
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 
@@ -32,8 +33,6 @@ class skipNRecoLeps(Module):
           if el.pt > self.minelpt and abs(el.eta) < self.maxeleta and (el.cutBased >= 1): nlepgood += 1
 
         return nlepgood >= 2
-        #return nlepgood == 1
-
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
