@@ -50,21 +50,23 @@ def Resubmit(dirname, verbose = 1, pretend = False):
   os.system(command + ' >> /dev/null')
   if verbose >= 2: print GC(3) + 'Done!' + GC()
 
-def CheckJobs(path = './', dirstart = 'crab_', date = '', verbose = 1, autoResubmit = False):
+def CheckJobs(path = './', dirstart = 'crab_', date = '', verbose = 1, autoResubmit = False, tag = ''):
   for d in os.listdir(path):
     if not os.path.isdir(path + '/' + d): continue
     if date != '' and date != GetDirDate(path + '/' + d): continue
     if not d.startswith(dirstart): continue
+    if tag != '' and not tag in d: continue
     CheckStatus(path+'/'+d, verbose, autoResubmit)
 
 ##################################################################################################################
 import argparse
 
-date = ''
+date = ''; tag = ''
 parser = argparse.ArgumentParser()
 parser.add_argument('--date', type = str, help ='Introduce the date in the format D/M/YYYY (example: 9/1/2019)')
 parser.add_argument('-p','--path', type = str, help ='Path to look for crab jobs')
 parser.add_argument('--dir',  type = str, help ='Folder name must start with this string (by default: \'crab_\')')
+parser.add_argument('--tag',  type = str, help ='String that must be contained in the folder name')
 parser.add_argument("-v", "--verbose", type = int,help="Increase output verbosity (1 by default)")
 parser.add_argument("-a", "--auto", action='store_true',help="Resubmit faling jobs automatically")
 args = parser.parse_args()
@@ -73,11 +75,13 @@ path = args.path
 dirn = args.dir
 verb = args.verbose
 auto = args.auto
+tag  = args.tag
 if date == None: date = ''
 if path == None: path = './'
 if dirn == None: dirn = 'crab_'
 if verb == None: verb = 1
 if auto == None: auto = 0
+if tag  == None: tag  = ''
 
-CheckJobs(path, dirn, date, verb, auto)
+CheckJobs(path, dirn, date, verb, auto, tag)
 

@@ -1,6 +1,7 @@
 import getpass
 import os
 import sys
+from CreateCrabScript import CreateCrabScriptSh
 
 # Default option for the verbose
 verbose   = False
@@ -73,7 +74,7 @@ def GuessYear(path):
   elif '2017'    in path: return 17
   elif '2016'    in path: return 16
 
-def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = 'prodTest', year = 0):
+def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = 'prodTest', year = 0, options = ''):
   ''' Creates a cfg file to send crab jobs to analyze a given dataset '''
   # CONSTANTS
   tier = "T2_ES_IFCA"
@@ -91,12 +92,26 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   strSplitting = "FileBased"; # MC
   lumiMask = ''
   crabScript = 'crab_script.py'
-  crabScriptSH = 'crab_script.sh'
+  crabname = 'crab_script_' + productionTag
+  craboptions = options if not isData else 'data,'+options
+
+  CreateCrabScriptSh(crabname, craboptions)
+  
+  crabScriptSH = crabname + '.sh'
+  slimeFileName = 'SlimFile' if not 'TnP' in options else 'SlimFileTnP'
+  lumijson = ''
   if(isData): 
     strSplitting = "LumiBased"#"Automatic" # "LumiBased";
-    crabScriptSH = 'crab_script_data.sh'
-    if   year == 17: lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'  # 41.29/fb
-    elif year == 18: lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
+    #crabScriptSH = 'crab_script_data.sh'
+    if   year == 16:
+      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+      lumijson = 'Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+    if   year == 17: 
+      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'  # 41.29/fb
+      lumijson = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
+    elif year == 18: 
+      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
+      lumijson = 'Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
     #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
 
   # Set according to input parameters
@@ -107,8 +122,11 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   if isTest: totalUnits = 3
   prodTag = productionTag
 
-  t_localdir     = "config.General.requestName = '"  + localdir + "'\n"
-  t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/SlimFile.txt']\n"
+  t_localdir     = "config.General.requestName = '"  + localdir + "_" + prodTag + "'\n"
+  if isData:
+    t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%s.txt', '../python/postprocessing/json/%s']\n" %(slimeFileName, lumijson)
+  else:
+    t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%s.txt']\n" %(slimeFileName)
   t_inputdataset = "config.Data.inputDataset = '" + datasetName + "'\n" 
   t_totalunits   = "config.Data.totalUnits = " + str(totalUnits) + "\n"
   t_unitsperjob  = "config.Data.unitsPerJob = " + str(unitsperjob) + "\n"
@@ -146,7 +164,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
 
 
 
-def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = False):
+def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = False, options = ''):
   path = CheckPathDataset(path)
   if(path == ''):
     print 'ERROR: dataset not found'
@@ -167,8 +185,9 @@ def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = Fals
     if line.find('#') > 0: line = line[:line.find('#')]
     if len(line) <= 1: continue
     cfgName = GetName_cfg(line, isData)
+    print 'line = ', line
     if verbose: print 'Creating cfg file for dataset: ', line
-    CrateCrab_cfg(line, isData, isTest, prodName, year)
+    CrateCrab_cfg(line, isData, isTest, prodName, year, options)
     if not doPretend:
       os.system('crab submit -c ' + cfgName)
       if not os.path.isdir(prodName): os.mkdir(prodName)
@@ -186,6 +205,7 @@ doPretend = False
 doDataset = False
 prodName  = 'Prod_' + GetToday() + '_' + GetTimeNow()
 datasetName = ''
+options = ''
 
 if narg == 0:
   print ' > Usage:'
@@ -201,6 +221,8 @@ if narg == 0:
   print ' >   Runs on a given dataset'
   print ' > --pretend'
   print ' >   Only creates the cfg file; does not send jobs'
+  print ' > --options'
+  print ' >   Add different options... as --options TnP or --options JEC'
   print ' '
   print ' > Examples:'
   print ' >   python SubmitDatasets.py data2018 -v --prodName may28'
@@ -222,6 +244,7 @@ else:
         datasetName = arguments[i]
         doDataset   = True
       elif a == 'prodName'   : prodName    = arguments[i]
+      elif a == 'options'    : options     = arguments[i]
     elif arg.startswith('-'):
       a = arg[1:]
       if a == 'v': verbose = True
@@ -231,7 +254,7 @@ else:
     doData = GuessIsData(datasetName)
     year   = GuessYear(datasetName)
     cfgName = GetName_cfg(datasetName, doData)
-    CrateCrab_cfg(datasetName, doData, dotest, prodName, year)
+    CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options)
     if not doPretend:
       os.system('crab submit -c ' + cfgName)
       if not os.path.isdir(prodName): os.mkdir(prodName)
@@ -239,4 +262,4 @@ else:
       #os.remove(cfgName)
 
   else:
-    SubmitDatasets(datasetName, dotest, prodName, doPretend)
+    SubmitDatasets(datasetName, dotest, prodName, doPretend, options)
