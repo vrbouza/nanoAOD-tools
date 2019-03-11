@@ -1,26 +1,36 @@
-drop Tau*
-
 drop CaloMET*
+drop ChsMET*
 drop FatJet*
 drop GenJetAK8*
+drop GenPart*
 drop GenVisTau*
+drop Generator*
+drop HTXS*
+drop IsoTrack*
+drop L1Reco*
+drop L1simulation*
+drop OtherPV*
 drop Photon*
 drop PuppiMET*
-drop fixedGrid*
-drop L1simulation_step
-drop SoftActivityJet*
+drop RawMET*
+drop SV*
+drop SoftActivity*
+drop SubGen*
 drop SubJet*
+drop Tau*
 drop TkMET*
 drop TrigObj*
-drop OtherPV*
-drop SV*
+
 
 # Select these trigger paths:
 drop HLT_*
 keep HLT_*SingleEl*
 keep HLT_*Ele32*
 keep HLT_*Ele35*
-keep HLT_*Ele115*
+keep HLT_*Ele37*
+keep HLT_*Ele38*
+keep HLT_*Ele40*
+keep HLT_*Ele15*
 keep HLT_*Ele12*
 keep HLT_*Ele23*
 keep HLT_*Ele16*
@@ -51,3 +61,5 @@ keep HLT_*TripleEl*
 keep HLT_*TripleMu*
 keep HLT_*SameSign*
 keep HLT_*DoubleMuSS*
+keep HLT_PFMET120_PFMHT120_IDTight
+keep HLT_PFMET120_PFMHT120_IDTight_PFHT60

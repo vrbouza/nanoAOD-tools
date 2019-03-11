@@ -17,8 +17,9 @@ drop SV*
 # Select these trigger paths:
 drop *
 keep Muon_*
+keep fixedGridRhoFastjetAll
 keep nJet
-keep Jet_pt
+keep Jet_*
 keep Pileup_*
 keep METFixEE2017_*
 keep MET_*
