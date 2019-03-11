@@ -5,15 +5,37 @@ from ROOT import TLorentzVector
 import os
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.JetReCalibrator import JetReCalibrator
+
+doCalculateJecLepAwareFromNanoAOD = False
 
 class addTnPvarMuon(Module):
-    def __init__(self, year = 17):
+    def __init__(self, isdata = False, year = 17, recalibjets = '', era = ''):
+      print 'Initializing addTnPvarMuon...'
       self.kProbePt = 12
       self.kTagPt   = 29
       self.kTagIso  = 0.20
       self.kMaxMass = 140
       self.kMinMass = 60
+      self.isData = isdata
       self.year = year
+      self.era = era
+      self.i = 0
+      self.filenameJECrecal = recalibjets
+      self.filenameJEC = recalibjets
+      if self.filenameJEC == '': self.filenameJEC = self.GetFileNameJEC(self.isData, self.filenameJEC, self.year, self.era)
+      if not doCalculateJecLepAwareFromNanoAOD: self.jetReCalibrator = self.OpenJECcalibrator()
+
+    def GetFileNameJEC(self, isdata, version = '', year = '', era = ''):
+      f = version
+      if f == '':
+        if   year == 16: f = 'Summer16_23Sep2016V4'
+        elif year == 17: f = 'Fall17_17Nov2017_V32'
+        elif year == 18: f = 'Autumn18_V3'
+      if isdata: f+= '_DATA'
+      else:      f+= '_MC'
+      return f
+
     def beginJob(self):
         pass
     def endJob(self):
@@ -28,6 +50,7 @@ class addTnPvarMuon(Module):
         self.out.branch("Tag_dxy",  "F")
         self.out.branch("Tag_dz",  "F")
         self.out.branch("Tag_charge", "I")
+        self.out.branch("Tag_isGenMatched", "I")
         self.out.branch("Probe_pt",   "F")
         self.out.branch("Probe_eta",  "F")
         self.out.branch("Probe_phi",  "F")
@@ -62,11 +85,30 @@ class addTnPvarMuon(Module):
         self.out.branch("Probe_passMVAL",         "I")
         self.out.branch("Probe_passMVAM",         "I")
         self.out.branch("Probe_passMVAT",         "I")
+        self.out.branch("Probe_isGenMatched",     "I")
         self.out.branch("TnP_mass", "F")
         self.out.branch("TnP_ht", "F")
         self.out.branch("TnP_met", "F")
         self.out.branch("TnP_trigger", "I")
         self.out.branch("TnP_npairs", "I")
+
+    def jetLepAwareJEC(self,lep,jet,L1corr):
+      p4l = lep.p4(); l = ROOT.TLorentzVector(p4l.Px(),p4l.Py(),p4l.Pz(),p4l.E())
+      if not hasattr(jet,'rawFactor'): return l
+      c = jet.rawFactor
+      f = 1 - c # factor to go to rawpt
+      p4j = jet.p4(); j = ROOT.TLorentzVector(p4j.Px(),p4j.Py(),p4j.Pz(),p4j.E())
+      if ((j*c-l).Rho()<1e-4): return l
+      print "origpt = %1.2f, mod pt = %1.2f"%(j.Pt(), (j*f).Pt())
+      if L1corr == 0: L1corr = 0.1
+      j = (j*f - l*(1.0/L1corr)) * (1/f) + l
+      return j
+
+    def ptRelv2(self,lep,jet,L1corr): # use only if jetAna.calculateSeparateCorrections==True
+      m = self.jetLepAwareJEC(lep,jet,L1corr)
+      p4l = lep.p4(); l = ROOT.TLorentzVector(p4l.Px(),p4l.Py(),p4l.Pz(),p4l.E())
+      if ((m-l).Rho()<1e-4): return 0 # lep.jet==lep (no match) or jet containing only the lepton
+      return l.Perp((m-l).Vect())
         
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -77,6 +119,14 @@ class addTnPvarMuon(Module):
         dR = muonLorentzVector.DeltaR(trigObj)
         if dR < dRmin: match = True
       return match
+
+    def OpenJECcalibrator(self, jetType = "AK4PF", doRes = True):
+        # For jet re-calibrating
+        fileNameJEC = self.filenameJEC
+        jesInputFilePath = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/" # By default
+        print 'Using the file: ', jesInputFilePath+fileNameJEC
+        return JetReCalibrator(fileNameJEC, jetType , doRes, jesInputFilePath, upToLevel=1)
+
     def analyze(self, event):
         # Get Jet and Muon collections
         jet  = Collection(event, 'Jet')
@@ -151,6 +201,12 @@ class addTnPvarMuon(Module):
 
         # Check that we have at least one pair... calculate the mass of the pair
         if len(pair) == 0: return False # events with 1 or 2 pairs!
+
+        rho = event.fixedGridRhoFastjetAll
+        print "[%i] rho = %1.2f" %(self.i, rho)
+        self.i += 1
+
+        # Set variables for tag, probe and event
         for thisPair in pair:
           ti, pi = thisPair
           ptag = TLorentzVector(); ppro = TLorentzVector()
@@ -168,7 +224,13 @@ class addTnPvarMuon(Module):
         
           # Compute HT and MET
           ht = 0; met = event.METFixEE2017_pt if self.year == 17 else event.MET_pt
-          for j in jet: ht += j if j > 30 else 0
+          for j in jet: 
+            if self.filenameJECrecal != "":
+              pass
+            else:
+              ht += j.pt if j.pt > 30 else 0
+
+          isdata = 0 if hasattr(event, 'Muon_genPartFlav') else 1
 
           # Tag kinematics
           self.out.fillBranch("Tag_pt",    muon[ti].pt)
@@ -179,6 +241,9 @@ class addTnPvarMuon(Module):
           self.out.fillBranch("Tag_iso",   muon[ti].pfRelIso04_all)
           self.out.fillBranch("Tag_dz",    muon[ti].dz)
           self.out.fillBranch("Tag_dxy",   muon[ti].dxy)
+
+          tagMatch = 1 if isdata else (muon[ti].genPartFlav == 1 or muon[ti].genPartFlav == 15)
+          self.out.fillBranch("Tag_isGenMatched", tagMatch)
 
           # Probe kinematics
           self.out.fillBranch("Probe_pt",    muon[pi].pt)
@@ -200,10 +265,12 @@ class addTnPvarMuon(Module):
           self.out.fillBranch("Probe_passRelIsoM",   muon[pi].pfRelIso04_all <= 0.25)
           self.out.fillBranch("Probe_passRelIsoL",   muon[pi].pfRelIso04_all <= 0.20)
           self.out.fillBranch("Probe_passRelIsoT",   muon[pi].pfRelIso04_all <= 0.15)
-          self.out.fillBranch("Probe_passMiniIsoL",  muon[pi].miniIsoId >= 1)
-          self.out.fillBranch("Probe_passMiniIsoM",  muon[pi].miniIsoId >= 2)
-          self.out.fillBranch("Probe_passMiniIsoT",  muon[pi].miniIsoId >= 3)
+          self.out.fillBranch("Probe_passMiniIsoL",  muon[pi].miniPFRelIso_all < 0.4)
+          self.out.fillBranch("Probe_passMiniIsoT",  muon[pi].miniPFRelIso_all < 0.2)
           self.out.fillBranch("Probe_passMiniIsoVT", muon[pi].miniIsoId >= 4)
+
+          probeMatch = 1 if isdata else (muon[pi].genPartFlav == 1 or muon[pi].genPartFlav == 15)
+          self.out.fillBranch("Probe_isGenMatched", probeMatch)
 
           # Other working points: SIP2D and dpt/pt
           self.out.fillBranch("Probe_passDptPt02",   muon[pi].ptErr/muon[pi].pt < 0.2)
@@ -215,25 +282,38 @@ class addTnPvarMuon(Module):
           self.out.fillBranch("Probe_passMVAM",      muon[pi].mvaId >= 2)
           self.out.fillBranch("Probe_passMVAT",      muon[pi].mvaId >= 3)
 
-          # MultiIso... calculate jet-JecLepAware from Muon_jetRelIso in nanoAOD
-          jetRelIso  = muon[pi].jetRelIso # jetRelIso = 1/ptRatio - 1
-          ptRatio = 1/(jetRelIso + 1)
-          jetJECLepAwarePt = muon[pi].pt*(jetRelIso + 1)
+          # MultiIso... calculate jet-JecLepAware ptRel, ptRatio
           jetId = muon[pi].jetIdx
           MiniRelIso = muon[pi].miniPFRelIso_all
-          if jetId != -1:
-            lp = TLorentzVector(); jt = TLorentzVector()
-            lp.SetPtEtaPhiM(muon[pi].pt, muon[pi].eta, muon[pi].phi, muon[pi].mass)
-            jt.SetPtEtaPhiM(jetJECLepAwarePt,  jet[jetId].eta,  jet[jetId].phi,  jet[jetId].mass)
-            ptRel = lp.Perp((jt-lp).Vect())
-          else:
+          jetRelIso  = muon[pi].jetRelIso # jetRelIso = 1/ptRatio - 1
+          if jetId == -1: # No jet matching....
             ptRel = 0
+            ptRatio = 1/(jetRelIso + 1)
+          else:
+            # from Muon_jetRelIso in nanoAOD
+            if doCalculateJecLepAwareFromNanoAOD:
+              jetRelIso  = muon[pi].jetRelIso # jetRelIso = 1/ptRatio - 1
+              ptRatio = 1/(jetRelIso + 1)
+              jetJECLepAwarePt = muon[pi].pt*(jetRelIso + 1)
+              lp = TLorentzVector(); jt = TLorentzVector()
+              lp.SetPtEtaPhiM(muon[pi].pt, muon[pi].eta, muon[pi].phi, muon[pi].mass)
+              jt.SetPtEtaPhiM(jetJECLepAwarePt,  jet[jetId].eta,  jet[jetId].phi,  jet[jetId].mass)
+              ptRel = lp.Perp((jt-lp).Vect())
+            else:
+              j = jet[jetId]
+              corr = self.jetReCalibrator.getCorrection(j, rho)
+              print 'corr = %1.2f, jet Pt = %1.2f' %(corr, j.pt)
+              ptRel = self.ptRelv2(muon[pi], j, corr)
+              print 'ptRel = ', ptRel
+              ptRatio = muon[pi].pt/self.jetLepAwareJEC(muon[pi], j, corr).Pt()
+              print 'ptRatio = ', ptRatio
 
           # Definitions from https://twiki.cern.ch/twiki/bin/viewauth/CMS/SUSLeptonSF
           passMultiIsoL =       MiniRelIso < 0.20 and (ptRatio > 0.69 or ptRel > 6.0) 
           passMultiIsoM =       MiniRelIso < 0.16 and (ptRatio > 0.76 or ptRel > 7.2) 
           passMultiIsoM2017   = MiniRelIso < 0.12 and (ptRatio > 0.80 or ptRel > 7.5) 
           passMultiIsoM2017v2 = MiniRelIso < 0.11 and (ptRatio > 0.74 or ptRel > 6.8) 
+          print 'passMultiIsoL = ', passMultiIsoL
           self.out.fillBranch("Probe_passMultiIsoL",       passMultiIsoL)
           self.out.fillBranch("Probe_passMultiIsoM",       passMultiIsoM)
           self.out.fillBranch("Probe_passMultiIsoM2017",   passMultiIsoM2017)
@@ -252,7 +332,13 @@ class addTnPvarMuon(Module):
         return False
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-addTnPMuon16 = lambda : addTnPvarMuon(16)
-addTnPMuon17 = lambda : addTnPvarMuon(17)
-addTnPMuon18 = lambda : addTnPvarMuon(18)
-addTnPMuon   = lambda : addTnPvarMuon()
+addTnPMuon16 = lambda : addTnPvarMuon(0,16)
+addTnPMuon17 = lambda : addTnPvarMuon(0,17,"Fall17_17Nov2017_V32_MC")
+addTnPMuon18 = lambda : addTnPvarMuon(0,18)
+
+addTnPMuon16data = lambda : addTnPvarMuon(1,16)
+addTnPMuon17data = lambda : addTnPvarMuon(1,17,"Fall17_17Nov2017_V32_DATA")
+addTnPMuon18data = lambda : addTnPvarMuon(1,18)
+addTnPMuon   = lambda : addTnPvarMuon(0,17)
+addTnPMuonForMoriond18  = lambda : addTnPvarMuon(0,18, "Autumn18_V3_MC")
+addTnPMuonForMoriond18data  = lambda : addTnPvarMuon(1,18, "Autumn18_V3_DATA")
