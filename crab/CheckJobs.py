@@ -47,7 +47,7 @@ def Resubmit(dirname, verbose = 1, pretend = False):
   if pretend:
     print command
     return
-  os.system(command + ' >> /dev/null')
+  os.system(command)# + ' >> /dev/null')
   if verbose >= 2: print GC(3) + 'Done!' + GC()
 
 def CheckJobs(path = './', dirstart = 'crab_', date = '', verbose = 1, autoResubmit = False, tag = ''):

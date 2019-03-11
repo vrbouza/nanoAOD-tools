@@ -100,6 +100,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   crabScriptSH = crabname + '.sh'
   slimeFileName = 'SlimFile' if not 'TnP' in options else 'SlimFileTnP'
   lumijson = ''
+  
   if(isData): 
     strSplitting = "LumiBased"#"Automatic" # "LumiBased";
     #crabScriptSH = 'crab_script_data.sh'
