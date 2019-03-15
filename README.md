@@ -1,7 +1,7 @@
 # nanoAOD-tools
 Tools for working with NanoAOD (requiring only python + root, not CMSSW)
 
-## Checkout instructions: PAF
+## Checkout instructions
 
 You need to install a recent version of CMSSW
 
@@ -15,6 +15,15 @@ Clone the code from the Oviedo-PAF group.
     scram b
 
 
+## Local example for producing TnP trees
+
+You can run a example to run on a single file and obtain a TnP n-tuple with the TnP produced module.
+
+    cmsenv
+    voms-proxy-init -voms cms
+    cd PhysicsTools/NanoAODTools/python/postprocessing/
+    python TnPaddVar.py
+
 ## How to run on CRAB
 
 Set the enviroment.
@@ -26,14 +35,13 @@ Move to the directory:
  
     cd PhysicsTools/NanoAODTools/crab
 
-Set the modules used in the analysis in crab_script.py and crab_script_data.py.
-Set the crab options in crab_cfg.py (only to run manually).
-
 To send jobs, run this script and follow the instructions:
 
     python SubmitDatasets.py
 
-To run on several datasets, edit the txt files in the /datasets folder.
+To run on several datasets, edit the txt files in the /datasets folder. Follow the instruction in:
+   
+    https://github.com/Oviedo-PAF/nanoAOD-tools/tree/master/crab
 
 ## Run in local:
 
@@ -57,7 +65,4 @@ This shoud run on a nanoAOD file and produce an output.
 - Adds jet energy uncertianties (although too many branches are produced...)
 
 #### What am I missing?
-- Some high-level variables: it would be nice to produce at this level some variables such as:
-     lepton pt ratio, lepton pt rel, n ISR jets...
 - LHE weights: they exist in nanoAOD but the format may be different from what is expected
-- Functions to produce more skims??
