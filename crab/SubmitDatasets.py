@@ -226,41 +226,43 @@ if narg == 0:
   print ' >   Add different options... as --options TnP or --options JEC'
   print ' '
   print ' > Examples:'
-  print ' >   python SubmitDatasets.py data2018 -v --prodName may28'
+  print ' >   python SubmitDatasets.py datasets/data2018.txt -v --prodName may28'
+  print ' >   python SubmitDatasets.py datasets/dataTnP_2018.txt -v --prodName may28 --options "TnP,2018,data"'
   print ' >   python SubmitDatasets.py --dataset /TT_TuneCUETP8M2T4_mtop1665_13TeV-powheg-pythia8/RunIISummer16NanoAOD-PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/NANOAODSIM -v --test'
   print ' >   python SubmitDatasets.py --dataset /TT_TuneCUETP8M2T4_mtop1665_13TeV-powheg-pythia8/RunIISummer16NanoAOD-PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/NANOAODSIM -v --pretend'
 
+import argparse
+parser = argparse.ArgumentParser(description='Submit jobs to crab')
+parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
+parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
+parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
+parser.add_argument('--dataset','-d'    , default=''           , help = 'Submit jobs to run on a given dataset')
+parser.add_argument('--prodName','-n'   , default=''           , help = 'Give a name to your production')
+parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your producer')
+parser.add_argument('file'         , default=''           , nargs='?', help = 'txt file with datasets')
+
+args = parser.parse_args()
+
+verbose     = args.verbose
+doPretend   = args.pretend
+dotest      = args.test
+datasetName = args.dataset
+prodName    = args.prodName
+options     = args.options
+fname       = args.file
+doDataset   = False if datasetName == '' else True
+
+
+if doDataset:
+  if verbose: print 'Creating cfg file for dataset: ', datasetName
+  doData = GuessIsData(datasetName)
+  year   = GuessYear(datasetName)
+  cfgName = GetName_cfg(datasetName, doData)
+  CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options)
+  if not doPretend:
+    os.system('crab submit -c ' + cfgName)
+    if not os.path.isdir(prodName): os.mkdir(prodName)
+    os.rename(cfgName, prodName + '/' + cfgName)
+    #os.remove(cfgName)
 else:
-  # SET ARGUMENTS AND OPTIONS
-  i = 0
-  if not arguments[0].startswith('--'): datasetName = arguments[0]
-  for arg in arguments:
-    i+=1
-    if arg.startswith('--'):
-      a = arg[2:]
-      if   a == 'test'       : dotest      = True
-      elif a == 'verbose'    : verbose     = True
-      elif a == 'pretend'    : doPretend   = True
-      elif a == 'dataset': 
-        datasetName = arguments[i]
-        doDataset   = True
-      elif a == 'prodName'   : prodName    = arguments[i]
-      elif a == 'options'    : options     = arguments[i]
-    elif arg.startswith('-'):
-      a = arg[1:]
-      if a == 'v': verbose = True
-
-  if doDataset:
-    if verbose: print 'Creating cfg file for dataset: ', datasetName
-    doData = GuessIsData(datasetName)
-    year   = GuessYear(datasetName)
-    cfgName = GetName_cfg(datasetName, doData)
-    CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options)
-    if not doPretend:
-      os.system('crab submit -c ' + cfgName)
-      if not os.path.isdir(prodName): os.mkdir(prodName)
-      os.rename(cfgName, prodName + '/' + cfgName)
-      #os.remove(cfgName)
-
-  else:
-    SubmitDatasets(datasetName, dotest, prodName, doPretend, options)
+  SubmitDatasets(fname, dotest, prodName, doPretend, options)
