@@ -7,7 +7,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.JetReCalibrator import JetReCalibrator
 
-doCalculateJecLepAwareFromNanoAOD = False
+doCalculateJecLepAwareFromNanoAOD = True
 
 class addTnPvarMuon(Module):
     def __init__(self, isdata = False, year = 17, recalibjets = '', era = ''):
@@ -333,12 +333,13 @@ class addTnPvarMuon(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 addTnPMuon16 = lambda : addTnPvarMuon(0,16)
-addTnPMuon17 = lambda : addTnPvarMuon(0,17,"Fall17_17Nov2017_V32_MC")
+addTnPMuon17 = lambda : addTnPvarMuon(0,17)
 addTnPMuon18 = lambda : addTnPvarMuon(0,18)
+# addTnPMuon17data = lambda : addTnPvarMuon(1,17,"Fall17_17Nov2017_V32_DATA")
 
 addTnPMuon16data = lambda : addTnPvarMuon(1,16)
-addTnPMuon17data = lambda : addTnPvarMuon(1,17,"Fall17_17Nov2017_V32_DATA")
+addTnPMuon17data = lambda : addTnPvarMuon(1,17)
 addTnPMuon18data = lambda : addTnPvarMuon(1,18)
-addTnPMuon   = lambda : addTnPvarMuon(0,17)
+
 addTnPMuonForMoriond18  = lambda : addTnPvarMuon(0,18, "Autumn18_V3_MC")
 addTnPMuonForMoriond18data  = lambda : addTnPvarMuon(1,18, "Autumn18_V3_DATA")
