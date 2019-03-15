@@ -15,11 +15,7 @@ jsonfile = ''
 year = 18
 
 ### INPUT FILE
-#filepath = ['/afs/cern.ch/work/j/jrgonzal/public/pruebaNanoAOD/8EAB6B64-9210-E811-B19D-FA163E759AE3.root']
-#filepath = ['root://cms-xrd-global.cern.ch//store/mc/RunIISummer16NanoAOD/TTJets_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/40000/2CE738F9-C212-E811-BD0E-EC0D9A8222CE.root']
-#filepath = ['/nfs/fanae/user/juanr/nanoAOD/CMSSW_9_4_6/src/PhysicsTools/NanoAODTools/python/postprocessing/skimtree.root']
 if isData:
-  #filepath = ['root://cms-xrd-global.cern.ch//store/data/Run2017D/SingleMuon/NANOAOD/Nano14Dec2018-v1/80000/0726FD7F-D51D-4348-8B48-FA2B7D2B403D.root']
   if     year == 18: 
     jsonfile = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
     filepath = ['root://cms-xrd-global.cern.ch//store/data/Run2018A/SingleMuon/NANOAOD/Nano14Dec2018-v1/40000/FCA30DD8-1CDE-DE47-B1FB-F6192CE78748.root']
@@ -45,7 +41,7 @@ else:
 outdir = '.'
 
 ### SKIM 
-cut = 'nMuon >= 2 && Muon_pt[0] > 25 && Muon_pt[1] >= 12 && Jet_pt > 200'#(nElectron + nMuon) >= 2 && Jet_pt > 200' # nGenDressedLepton >= 2
+cut = 'nMuon >= 2 && Muon_pt[0] > 25 && Muon_pt[1] >= 12'
 
 ### SLIM FILE
 slimfile = "SlimFileTnP.txt"
@@ -56,10 +52,8 @@ from modules.jme.jetmetUncertainties import *
 from modules.common.puWeightProducer import *
 from modules.skimNRecoLeps import *
 from modules.addTnPvarMuon import *
-#from modules.addSUSYvar import *
-#mod = [puAutoWeight(), skimRecoLeps(), addSUSYvarsMC()] # countHistogramsProducer(), jetmetUncertainties2017All()
 
-mod = [puAutoWeight()] if not isData else []# countHistogramsProducer(), jetmetUncertainties2017All()
+mod = [puAutoWeight()] if not isData else []
 if isData:
   if   year == 17: mod.append(addTnPMuon17data())
   elif year == 18: mod.append(addTnPMuonForMoriond18data())
@@ -67,5 +61,5 @@ else:
   if   year == 17: mod.append(addTnPMuon17())
   elif year == 18: mod.append(addTnPMuonForMoriond18())
 
-p=  PostProcessor(outdir,filepath,cut,slimfile,mod,provenance=True,outputbranchsel=slimfile) if jsonfile == '' else PostProcessor(outdir,filepath,cut,slimfile,mod,provenance=True,outputbranchsel=slimfile,jsonInput = jsonInput)
+p = PostProcessor(outdir,filepath,cut,slimfile,mod,provenance=True,outputbranchsel=slimfile) if jsonfile == '' else PostProcessor(outdir,filepath,cut,slimfile,mod,provenance=True,outputbranchsel=slimfile,jsonInput = jsonInput)
 p.run()
