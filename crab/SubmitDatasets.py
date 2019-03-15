@@ -74,10 +74,10 @@ def GuessYear(path):
   elif '2017'    in path: return 17
   elif '2016'    in path: return 16
 
-def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = 'prodTest', year = 0, options = ''):
+def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = 'prodTest', year = 0, options = '', outTier = 'T2_ES_IFCA'):
   ''' Creates a cfg file to send crab jobs to analyze a given dataset '''
   # CONSTANTS
-  tier = "T2_ES_IFCA"
+  tier = outTier
   unitsperjob = 1
 
   # Set according to datasetName
@@ -223,11 +223,13 @@ if narg == 0:
   print ' > --pretend'
   print ' >   Only creates the cfg file; does not send jobs'
   print ' > --options'
-  print ' >   Add different options... as --options TnP or --options JEC'
+  print ' >   Add different options... as --options "TnP" or --options "2018,data"'
+  print ' > --outTier'
+  print ' >   Select your Tier... by default: T2_ES_IFCA'
   print ' '
   print ' > Examples:'
   print ' >   python SubmitDatasets.py datasets/data2018.txt -v --prodName may28'
-  print ' >   python SubmitDatasets.py datasets/dataTnP_2018.txt -v --prodName may28 --options "TnP,2018,data"'
+  print ' >   python SubmitDatasets.py datasets/data2018_TnP.txt -v --prodName may28 --options "TnP,2018,data"'
   print ' >   python SubmitDatasets.py --dataset /TT_TuneCUETP8M2T4_mtop1665_13TeV-powheg-pythia8/RunIISummer16NanoAOD-PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/NANOAODSIM -v --test'
   print ' >   python SubmitDatasets.py --dataset /TT_TuneCUETP8M2T4_mtop1665_13TeV-powheg-pythia8/RunIISummer16NanoAOD-PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/NANOAODSIM -v --pretend'
 
@@ -239,6 +241,7 @@ parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends o
 parser.add_argument('--dataset','-d'    , default=''           , help = 'Submit jobs to run on a given dataset')
 parser.add_argument('--prodName','-n'   , default=''           , help = 'Give a name to your production')
 parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your producer')
+parser.add_argument('--outTier'    , default=''           , help = 'Your output tier')
 parser.add_argument('file'         , default=''           , nargs='?', help = 'txt file with datasets')
 
 args = parser.parse_args()
@@ -249,6 +252,7 @@ dotest      = args.test
 datasetName = args.dataset
 prodName    = args.prodName
 options     = args.options
+outTier     = args.outTier
 fname       = args.file
 doDataset   = False if datasetName == '' else True
 
@@ -258,7 +262,7 @@ if doDataset:
   doData = GuessIsData(datasetName)
   year   = GuessYear(datasetName)
   cfgName = GetName_cfg(datasetName, doData)
-  CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options)
+  CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options,outTier)
   if not doPretend:
     os.system('crab submit -c ' + cfgName)
     if not os.path.isdir(prodName): os.mkdir(prodName)
