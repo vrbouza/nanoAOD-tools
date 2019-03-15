@@ -12,7 +12,7 @@ dataverbose = 'Is data!!' if isData else 'is MC!!'
 print dataverbose
 
 jsonfile = ''
-year = 18
+year = 17
 
 ### INPUT FILE
 if isData:
