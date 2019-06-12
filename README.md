@@ -56,13 +56,10 @@ This shoud run on a nanoAOD file and produce an output.
 
 #### What is this doing? It reads a nanoAOD and:
 - Applies a string-like skim
-- Use the module skimNRecoLeps to select events with 2 leptons with pT > 18, eta < 2.5
+- Use the module skimNRecoLeps to select events with 2 leptons with pT > 18, eta < 2.5 (by default)
 - Removes plenty of branches
 - Produces PU weights
 - Produces Count / SumWeights histograms
 - Changes the name of the main tree 'Events' to 'tree'
 - Changes the output name and copies the output to a T2
-- Adds jet energy uncertianties (although too many branches are produced...)
-
-#### What am I missing?
-- LHE weights: they exist in nanoAOD but the format may be different from what is expected
+- Additionally, the TnP module can be used to create an output TnP tree to produce muon efficiencies.
