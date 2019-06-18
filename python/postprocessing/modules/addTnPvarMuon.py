@@ -266,8 +266,9 @@ class addTnPvarMuon(Module):
           self.out.fillBranch("Probe_passRelIsoL",   muon[pi].pfRelIso04_all <= 0.20)
           self.out.fillBranch("Probe_passRelIsoT",   muon[pi].pfRelIso04_all <= 0.15)
           self.out.fillBranch("Probe_passMiniIsoL",  muon[pi].miniPFRelIso_all < 0.4)
-          self.out.fillBranch("Probe_passMiniIsoT",  muon[pi].miniPFRelIso_all < 0.2)
-          self.out.fillBranch("Probe_passMiniIsoVT", muon[pi].miniIsoId >= 4)
+          self.out.fillBranch("Probe_passMiniIsoM",  muon[pi].miniPFRelIso_all < 0.2)
+          self.out.fillBranch("Probe_passMiniIsoT",  muon[pi].miniPFRelIso_all < 0.1)
+          self.out.fillBranch("Probe_passMiniIsoVT", muon[pi].miniPFRelIso_all < 0.05)
 
           probeMatch = 1 if isdata else (muon[pi].genPartFlav == 1 or muon[pi].genPartFlav == 15)
           self.out.fillBranch("Probe_isGenMatched", probeMatch)
@@ -341,5 +342,5 @@ addTnPMuon16data = lambda : addTnPvarMuon(1,16)
 addTnPMuon17data = lambda : addTnPvarMuon(1,17)
 addTnPMuon18data = lambda : addTnPvarMuon(1,18)
 
-addTnPMuonForMoriond18  = lambda : addTnPvarMuon(0,18, "Autumn18_V3_MC")
+addTnPMuonForMoriond18      = lambda : addTnPvarMuon(0,18, "Autumn18_V3_MC")
 addTnPMuonForMoriond18data  = lambda : addTnPvarMuon(1,18, "Autumn18_V3_DATA")

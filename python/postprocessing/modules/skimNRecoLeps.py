@@ -7,12 +7,19 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 class skipNRecoLeps(Module):
-    def __init__(self):
+    def __init__(self, isdata = False, year = 17, recalibjets = '', era = ''):
         self.minelpt  = 18 # 18
         self.minmupt  = 18 # 18
         self.maxeleta = 2.5
         self.maxmueta = 2.5
-        pass
+        self.isData = isdata
+        self.year = year
+        self.era = era
+        self.filenameJECrecal = recalibjets
+        self.filenameJEC = recalibjets
+        if self.filenameJEC == '': self.filenameJEC = self.GetFileNameJEC(self.isData, self.filenameJEC, self.year, self.era)
+        #self.jetReCalibrator = self.OpenJECcalibrator()
+        
     def beginJob(self):
         pass
     def endJob(self):
@@ -21,6 +28,24 @@ class skipNRecoLeps(Module):
         pass
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
+
+    def GetFileNameJEC(self, isdata, version = '', year = '', era = ''):
+      f = version
+      if f == '':
+        if   year == 16: f = 'Summer16_23Sep2016V4'
+        elif year == 17: f = 'Fall17_17Nov2017_V32'
+        elif year == 18: f = 'Autumn18_V3'
+      if isdata: f+= '_DATA'
+      else:      f+= '_MC'
+      return f
+
+    #def OpenJECcalibrator(self, jetType = "AK4PF", doRes = True):
+    #    # For jet re-calibrating
+    #    fileNameJEC = self.filenameJEC
+    #    jesInputFilePath = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/" # By default
+    #    print 'Using the file: ', jesInputFilePath+fileNameJEC
+    #    return JetReCalibrator(fileNameJEC, jetType , doRes, jesInputFilePath, upToLevel=1)
+
     def analyze(self, event):
         #jets = Collection(event, 'Jet')
         elec = Collection(event, 'Electron')
@@ -37,4 +62,3 @@ class skipNRecoLeps(Module):
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
 skimRecoLeps = lambda : skipNRecoLeps()
- 

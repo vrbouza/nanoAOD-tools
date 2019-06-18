@@ -2,7 +2,6 @@ drop CaloMET*
 drop ChsMET*
 drop FatJet*
 drop GenJetAK8*
-drop GenPart*
 drop GenVisTau*
 drop Generator*
 drop HTXS*
@@ -21,6 +20,7 @@ drop Tau*
 drop TkMET*
 drop TrigObj*
 
+#drop GenPart*
 
 # Select these trigger paths:
 drop HLT_*

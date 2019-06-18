@@ -16,12 +16,15 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties im
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.skimNRecoLeps import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.addTnPvarMuon import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib import *
 isData   = 'data' in sys.argv[-1] or 'Data' in sys.argv[-1]
 doTnP    = 'TnP'  in sys.argv[-1]
 doJECunc = 'JEC'  in sys.argv[-1]
 if         '18' in sys.argv[-1] : year = 18
 elif       '16' in sys.argv[-1] : year = 16
-else                              : year = 17
+else                            : year = 17
+era = '' if not 'era' in sys.argv[-1] else sys.argv[-1][sys.argv[-1].find('era')+3:sys.argv[-1].find('era')+4]
+if era !='': print '>Found era: ', era
 
 ### Json file
 jsonfile = runsAndLumis()
@@ -32,11 +35,17 @@ jsonfile = runsAndLumis()
   
 
 mod = []
+jecfile  = ''
 if not isData: 
   if   year == 16:  mod.append(puWeight2016())
-  elif year == 17:  mod.append(puAutoWeight())
-  elif year == 18:  mod.append(puAutoWeight())
+  elif year == 17:  mod.append(puAutoWeight_2017())
+  elif year == 18:  
+    jecfile  = "Autumn18_V8_MC"
+    mod.append(puAutoWeight_2018())
   else           :  mod.append(puAutoWeight())
+elif year == 18 and era != '': jecfile = 'Autumn18_Run%s_V8_DATA'%era
+
+if jecfile != '': mod.append(jetRecalib(jecfile))
 
 if doTnP:
   if isData:
