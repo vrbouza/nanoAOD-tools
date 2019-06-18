@@ -36,6 +36,7 @@ keep HLT_*Ele23*
 keep HLT_*Ele16*
 keep HLT_*Ele24*
 keep HLT_*SingleMu*
+keep HLT_*IsoTkMu*
 keep HLT_*TrkMu12*
 keep HLT_*IsoMu27*
 keep HLT_*IsoMu20*
@@ -62,4 +63,7 @@ keep HLT_*TripleMu*
 keep HLT_*SameSign*
 keep HLT_*DoubleMuSS*
 keep HLT_PFMET120_PFMHT120_IDTight
+keep HLT_PFMET120_PFMHT120_IDTight_PFHT60
+keep HLT_Ele*_WPTight_Gsf
+keep HLT_Ele*_WPLoose_Gsf
 keep HLT_PFMET120_PFMHT120_IDTight_PFHT60
