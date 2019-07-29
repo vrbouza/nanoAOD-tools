@@ -1,4 +1,4 @@
-# dasgoclient --query="dataset dataset=/Single*/Run2017*Nano14Dec2018*/NANOAOD"
+#ient --query="dataset dataset=/Single*/Run2017*Nano14Dec2018*/NANOAOD"
 
 #SingleMuon
 /SingleMuon/Run2017B-Nano14Dec2018-v1/NANOAOD
@@ -6,7 +6,6 @@
 /SingleMuon/Run2017D-Nano14Dec2018-v1/NANOAOD
 /SingleMuon/Run2017E-Nano14Dec2018-v1/NANOAOD
 /SingleMuon/Run2017F-Nano14Dec2018-v1/NANOAOD
-/SingleMuon/Run2017F-30Jan2019-v1/NANOAOD
 
 #SingleElectron
 /SingleElectron/Run2017B-Nano14Dec2018-v1/NANOAOD
