@@ -31,8 +31,19 @@ def GetTimeNow():
   now = datetime.datetime.now()
   time = str(now.hour) + 'h' + str(now.minute) + 'm' + str(now.second) + 's'
   return time
-#################################################
 
+def GetEra(datasetName, year, isData = True):
+  if not isData: return ''
+  if isinstance(year, int): year = str(year)
+  if len(year) == 2: year = "20%s"%year
+  sy = 'Run%s'%(year)
+  ls = len(sy)
+  find = datasetName.find(sy)
+  if find == -1: return ''
+  era = datasetName[find+ls:find+ls+1]
+  return era
+  
+#################################################
 
 def GetName_cfg(datasetName, isData = False):
   ''' Returns the name of the cfg file for a given dataset '''
@@ -93,7 +104,9 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   lumiMask = ''
   crabScript = 'crab_script.py'
   crabname = 'crab_script_' + productionTag
-  craboptions = options if not isData else 'data,'+options
+  craboptions = '%s,%i'%(options,year) if not isData else 'data,%s,%i'%(options,year)
+  era = GetEra(datasetName, year, isData)
+  if era != '': craboptions += ',era%s'%era
 
   CreateCrabScriptSh(crabname, craboptions)
   
@@ -102,7 +115,8 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   lumijson = ''
   
   if(isData): 
-    strSplitting = "LumiBased"#"Automatic" # "LumiBased";
+    # Set as MC... the only way the Count histogram works!! --> So we can compare with the numbers in DAS
+    # strSplitting = "LumiBased"#"Automatic" # "LumiBased";
     #crabScriptSH = 'crab_script_data.sh'
     if   year == 16:
       lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
@@ -111,15 +125,18 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
       lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'  # 41.29/fb
       lumijson = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
     elif year == 18: 
-      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
+      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
+      #'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
       lumijson = 'Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
     #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
 
   # Set according to input parameters
   totalUnits = 10000 # test
-  if isData: 
-    totalUnits = 500000
-    unitsperjob = 500
+
+  # Set as MC... the only way the Count histogram works!! --> So we can compare with the numbers in DAS
+  #if isData: 
+  #  totalUnits = 500000
+  #  unitsperjob = 500
   if isTest: totalUnits = 3
   prodTag = productionTag
 
@@ -141,7 +158,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   text += "config = Configuration()\nconfig.section_('General')\n"
   text += t_localdir
   text += "config.General.transferLogs=True\nconfig.section_('JobType')\nconfig.JobType.pluginName = 'Analysis'\n"
-  text += "config.JobType.psetName = 'PSet.py'\nconfig.JobType.scriptExe = '" + crabScriptSH + "'\nconfig.JobType.sendPythonFolder	 = True\n"
+  text += "config.JobType.psetName = 'PSet.py'\nconfig.JobType.scriptExe = '" + crabScriptSH + "'\nconfig.JobType.sendPythonFolder = True\n"
   text += t_inputfiles
   text += "config.section_('Data')\n"
   text += t_inputdataset
@@ -163,6 +180,20 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   os.system('chmod a+x ' + filename)
   if verbose: print '   >> Created cfg file: ', filename
 
+def ReadLines(path):
+  lines = []
+  f = open(path, 'r')
+  for line in f:
+    line = line.replace(' ', '')
+    line = line.replace('\t', '')
+    line = line.replace('\n', '')
+    line = line.replace('\r', '')
+    if line == '': continue
+    if line[0] == '#': continue
+    if line.find('#') > 0: line = line[:line.find('#')]
+    if len(line) <= 1: continue
+    lines.append(line)
+  return lines
 
 
 def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = False, options = ''):
@@ -175,19 +206,11 @@ def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = Fals
   if verbose: 
     if isData: print 'Opening path: ', path, '(DATA)'
     else: print  'Opening path: ', path, '(MC)'
-  f = open(path, 'r')
-  for line in f:
-    line = line.replace(' ', '')
-    line = line.replace('\t', '')
-    line = line.replace('\n', '')
-    line = line.replace('\r', '')
-    if line == '': continue
-    if line[0] == '#': continue
-    if line.find('#') > 0: line = line[:line.find('#')]
-    if len(line) <= 1: continue
+  for line in ReadLines(path):
     cfgName = GetName_cfg(line, isData)
     print 'line = ', line
     if verbose: print 'Creating cfg file for dataset: ', line
+    if verbose: print '%s!! year = %s, options = %s'%('Data' if isData else 'MC', year, options) 
     CrateCrab_cfg(line, isData, isTest, prodName, year, options)
     if not doPretend:
       os.system('crab submit -c ' + cfgName)
@@ -233,40 +256,45 @@ if narg == 0:
   print ' >   python SubmitDatasets.py --dataset /TT_TuneCUETP8M2T4_mtop1665_13TeV-powheg-pythia8/RunIISummer16NanoAOD-PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/NANOAODSIM -v --test'
   print ' >   python SubmitDatasets.py --dataset /TT_TuneCUETP8M2T4_mtop1665_13TeV-powheg-pythia8/RunIISummer16NanoAOD-PUMoriond17_05Feb2018_94X_mcRun2_asymptotic_v2-v1/NANOAODSIM -v --pretend'
 
-import argparse
-parser = argparse.ArgumentParser(description='Submit jobs to crab')
-parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
-parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
-parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
-parser.add_argument('--dataset','-d'    , default=''           , help = 'Submit jobs to run on a given dataset')
-parser.add_argument('--prodName','-n'   , default=''           , help = 'Give a name to your production')
-parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your producer')
-parser.add_argument('--outTier'    , default=''           , help = 'Your output tier')
-parser.add_argument('file'         , default=''           , nargs='?', help = 'txt file with datasets')
-
-args = parser.parse_args()
-
-verbose     = args.verbose
-doPretend   = args.pretend
-dotest      = args.test
-datasetName = args.dataset
-prodName    = args.prodName
-options     = args.options
-outTier     = args.outTier
-fname       = args.file
-doDataset   = False if datasetName == '' else True
-
-
-if doDataset:
-  if verbose: print 'Creating cfg file for dataset: ', datasetName
-  doData = GuessIsData(datasetName)
-  year   = GuessYear(datasetName)
-  cfgName = GetName_cfg(datasetName, doData)
-  CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options,outTier)
-  if not doPretend:
-    os.system('crab submit -c ' + cfgName)
-    if not os.path.isdir(prodName): os.mkdir(prodName)
-    os.rename(cfgName, prodName + '/' + cfgName)
-    #os.remove(cfgName)
-else:
-  SubmitDatasets(fname, dotest, prodName, doPretend, options)
+def __main__():
+  print 'Executing main'
+  import argparse
+  parser = argparse.ArgumentParser(description='Submit jobs to crab')
+  parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
+  parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
+  parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
+  parser.add_argument('--dataset','-d'    , default=''           , help = 'Submit jobs to run on a given dataset')
+  parser.add_argument('--prodName','-n'   , default=''           , help = 'Give a name to your production')
+  parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your producer')
+  parser.add_argument('--outTier'    , default='T2_ES_IFCA' , help = 'Your output tier')
+  parser.add_argument('file'         , default=''           , nargs='?', help = 'txt file with datasets')
+  
+  args = parser.parse_args()
+  
+  verbose     = args.verbose
+  doPretend   = args.pretend
+  dotest      = args.test
+  datasetName = args.dataset
+  prodName    = args.prodName
+  options     = args.options
+  outTier     = args.outTier
+  fname       = args.file
+  doDataset   = False if datasetName == '' else True
+  
+  
+  if doDataset:
+    if verbose: print 'Creating cfg file for dataset: ', datasetName
+    doData = GuessIsData(datasetName)
+    year   = GuessYear(datasetName)
+    cfgName = GetName_cfg(datasetName, doData)
+    CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options,outTier)
+    if not doPretend:
+      os.system('crab submit -c ' + cfgName)
+      if not os.path.isdir(prodName): os.mkdir(prodName)
+      os.rename(cfgName, prodName + '/' + cfgName)
+      #os.remove(cfgName)
+  else:
+    SubmitDatasets(fname, dotest, prodName, doPretend, options)
+  
+if __name__ == '__main__':
+  __main__()

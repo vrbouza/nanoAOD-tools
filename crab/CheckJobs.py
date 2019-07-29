@@ -26,20 +26,57 @@ def CheckStatus(dirname, verbose = 1, autoResubmit = True, pretend = False):
   fin = GetLine(out,'finished')
   tra = GetLine(out,'transferring')
   run = GetLine(out,'running')
-  fai = GetLine(out,'failed')
+  fai = GetLine(out,'failed'); 
   status = GetLine(out, 'Status on the scheduler')
+  submitfailed = GetLine(out, 'SUBMITFAILED')
+  if submitfailed != '': status = 'SUBMITFAILED'
   if status != '': status = status.split('\t')[-1]
   title = GC(4)+'['+GC(3)+dirname+GC(4)+']'+GC()
-  if verbose >= 1: title += '\t\tStatus: '+GC(2)+status+GC()
-  if fai != '':    title += '\t'+GC(1)+'Failed jobs: '+ fai.split('\t')[-1]+GC()
-  print title
+  if   status == 'SUBMITFAILED': title += '\t\tStatus: '+GC(1)+status+GC()
+  elif status == 'FAILED'      : title += '\t\tStatus: '+GC(5)+status+GC()
+  else                         : title += '\t\tStatus: '+GC(2)+status+GC()
+  if fai != '' and status == 'FAILED':    title += '\t'+GC(1)+'Failed jobs: '+ fai.split('\t')[-1]+GC()
+  if verbose >= 1 or not 'COMPLETE' in status: print title
   if verbose >= 2:
     if fin != '': print '  # ' + GC(2) + fin[:fin.find(' ')] + '\t' + GC(4) + fin[fin.find(' '):]+GC()
     if tra != '': print '  # ' + GC(2) + tra[:tra.find(' ')] + '\t' + GC(4) + tra[tra.find(' '):]+GC()
     if run != '': print '  # ' + GC(2) + run[:run.find(' ')] + '\t' + GC(4) + run[run.find(' '):]+GC()
     if fai != '': print '  # ' + GC(2) + fai[:fai.find(' ')] + '\t' + GC(4) + fai[fai.find(' '):]+GC()
-  if fai != '' and autoResubmit: Resubmit(dirname, verbose)
+  if   status == 'FAILED' and autoResubmit: Resubmit(dirname, verbose)
+  elif status == 'SUBMITFAILED' and autoResubmit: CrabSubmit(dirname, verbose)
   #if status == 'SUBMITTED':
+
+#crab_WZ_TuneCP5_13TeV-pythia8_mc2017_22jul2019/crab.log:INFO 2019-07-22 17:54:00,650: def Will use CRAB configuration file crab_cfg_WZ_TuneCP5_13TeV-pythia8.py
+#dirname+'/crab.log'
+#crab_TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8_mc2017_22jul2019
+
+def CrabSubmit(dirname, verbose = 1, pretend = False, force = True):
+  f = open(dirname+'/crab.log').read()
+  fname = GetLine(f, 'Will use CRAB configuration file').split(' ')[-1]
+  #crab_cfg_TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8.py
+  refname = "%s"%fname
+  if os.path.isfile(refname):
+    submitname = refname
+  else:
+    submitname = "%s"%dirname
+    while submitname[0] == '.' or submitname[0] == '/': submitname = submitname[1:]
+    if submitname.startswith('crab_'): submitname = submitname[5:]
+    if refname.endswith('.py'): refname = refname[:-3]
+    if refname.startswith('crab_cfg_'): refname = refname[9:]
+    submitname = submitname[len(refname)+1:]
+    while submitname[0] == '/': submitname = submitname[1:]
+    submitname = submitname + '/' + fname
+  command = "crab submit -c %s"%(submitname)
+  if pretend:
+    print command
+    return
+  if force: 
+    newdir = refname+'old' if not '/' in refname else refname.split('/')[-1]+'old'
+    print ' >> Moving dir %s to %s...'%(dirname, newdir)
+    if os.path.isfile(newdir) or os.path.isdir(newdir): os.system('rm -r %s'%newdir)
+    os.system('mv %s %s'%(dirname, newdir))
+  os.system(command)
+
 
 def Resubmit(dirname, verbose = 1, pretend = False):
   if verbose >= 1: print '  > ' + GC(1) + 'Resubmitting ' + GC(6) + dirname + GC() + '...'

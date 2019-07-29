@@ -37,7 +37,7 @@ jsonfile = runsAndLumis()
 mod = []
 jecfile  = ''
 if not isData: 
-  if   year == 16:  mod.append(puWeight2016())
+  if   year == 16:  mod.append(puWeight_2016())
   elif year == 17:  mod.append(puAutoWeight_2017())
   elif year == 18:  
     jecfile  = "Autumn18_V8_MC"
