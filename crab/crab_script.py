@@ -14,12 +14,17 @@ slimfile = "SlimFile.txt"
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.skimNRecoLeps import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.addTnPvarMuon import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib import *
-isData   = 'data' in sys.argv[-1] or 'Data' in sys.argv[-1]
-doTnP    = 'TnP'  in sys.argv[-1]
-doJECunc = 'JEC'  in sys.argv[-1]
+isData    = 'data' in sys.argv[-1] or 'Data' in sys.argv[-1]
+doNotSkim = 'noskim' in sys.argv[-1] or 'noSkim' in sys.argv[-1]
+doTnP     = 'TnP'  in sys.argv[-1]
+doJECunc  = 'JEC'  in sys.argv[-1]
+doMuonScale = 'muScale' in sys.argv[-1]
+doJECunc = True
+doMuonScale = True
 if         '18' in sys.argv[-1] : year = 18
 elif       '16' in sys.argv[-1] : year = 16
 else                            : year = 17
@@ -33,19 +38,21 @@ jsonfile = runsAndLumis()
 #  elif   year == 17: jsonfile = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt' 
 #  elif   year == 16: jsonfile = 'Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
   
-
 mod = []
 jecfile  = ''
 if not isData: 
   if   year == 16:  mod.append(puWeight_2016())
-  elif year == 17:  mod.append(puAutoWeight_2017())
+  elif year == 17:  mod.append(puWeight_2017()) # puAutoWeight_2017 
   elif year == 18:  
     jecfile  = "Autumn18_V8_MC"
-    mod.append(puAutoWeight_2018())
-  else           :  mod.append(puAutoWeight())
-elif year == 18 and era != '': jecfile = 'Autumn18_Run%s_V8_DATA'%era
+    jecarc   = "Autumn18_V8_MC"
+    mod.append(puWeight_2018())
+  else           :  mod.append(puAutoWeight_2017())
+elif year == 18 and era != '': 
+  jecfile = 'Autumn18_Run%s_V8_DATA'%era
+  jecarc  = 'Autumn18_V8_DATA'
 
-if jecfile != '': mod.append(jetRecalib(jecfile))
+if jecfile != '': mod.append(jetRecalib(jecfile, jecarc))
 
 if doTnP:
   if isData:
@@ -59,8 +66,16 @@ if doTnP:
   slimfile = "SlimFileTnP.txt"
   cut = 'nMuon >= 2 && Muon_pt[0] > 25 && Muon_pt[1] >= 12'
 else:
-  mod.append(skimRecoLeps())
-  if doJECunc and not isData: mod.append(jetmetUncertainties2017All())
+  if not doNotSkim: mod.append(skimRecoLeps())
+  else: cut = ''
+  if doJECunc and not isData: 
+    if   year == 16: mod.append(jetmetUncertainties2016())
+    elif year == 17: mod.append(jetmetUncertainties2017())
+    elif year == 18: mod.append(jetmetUncertainties2018())
+  if doMuonScale:
+    if   year == 16: mod.append(muonScaleRes2016())
+    elif year == 17: mod.append(muonScaleRes2017())
+    elif year == 18: mod.append(muonScaleRes2018())
 
 print '>> Slim file: ', slimfile
 print '>> cut: ', cut
