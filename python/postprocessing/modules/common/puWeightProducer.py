@@ -100,3 +100,8 @@ pufile_data2018="%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/pil
 pufile_mc2018="%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/pileup/mcPileup2018.root" % os.environ['CMSSW_BASE']
 puWeight_2018 = lambda : puWeightProducer(pufile_mc2018,pufile_data2018,"pu_mc","pileup",verbose=False, doSysVar=True)
 puAutoWeight_2018 = lambda : puWeightProducer("auto",pufile_data2018,"pu_mc","pileup",verbose=False)
+
+pufile_data5TeV="%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/pileup/pileup_5TeV.root" % os.environ['CMSSW_BASE']
+pufile_mc5TeV="%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/pileup/mcPileup2018.root" % os.environ['CMSSW_BASE']
+puWeight_5TeV = lambda : puWeightProducer(pufile_mc5TeV,pufile_data5TeV,"pu_mc","pileup",verbose=False, doSysVar=True)
+puAutoWeight_5TeV = lambda : puWeightProducer("auto",pufile_data5TeV,"pu_mc","pileup",verbose=False)

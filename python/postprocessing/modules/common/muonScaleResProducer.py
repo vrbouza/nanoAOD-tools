@@ -82,7 +82,6 @@ class muonScaleResProducer(Module):
         self.out.fillBranch("Muon_correctedDown_pt",  pt_corr_down)
         return True
 
-
 muonScaleRes2016 = lambda : muonScaleResProducer('roccor.Run2.v3', 'RoccoR2016.txt', 2016)
 muonScaleRes2017 = lambda : muonScaleResProducer('roccor.Run2.v3', 'RoccoR2017.txt', 2017)
 muonScaleRes2018 = lambda : muonScaleResProducer('roccor.Run2.v3', 'RoccoR2018.txt', 2018)
