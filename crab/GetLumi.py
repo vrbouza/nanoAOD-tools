@@ -15,7 +15,7 @@ parser.add_argument('--path',      default = './',                              
 parser.add_argument('--verbose',   default = 1,                                                           help = 'Set the verbose level')
 parser.add_argument('--json',      default = 'lumisToProcess',                                            help = 'Introduce the json file to read by brilcalc')
 parser.add_argument('--datasets',  default = 'MuonEG, DoubleMuon, DoubleEG, SingleMuon, SingleElectron',  help = 'Choose the datasets')
-parser.add_argument('--eras',      default = 'B,C,D,E,F',                                                 help = 'Select the eras to check')
+parser.add_argument('--eras',      default = 'B,C,D,E,F,G',                                               help = 'Select the eras to check')
 parser.add_argument('--year',      default = 2017,                                                        help = 'Select the year (2017 by default)')
 parser.add_argument('--date',      default = '11/Feb',                                                    help = 'Check automatically folders created in date with format: "11/Feb"')
 parser.add_argument('--tag',       default = '',                                                          help = 'Check that a given tag is in the folder name')
