@@ -57,3 +57,6 @@ Check the default configuration (including JEC corrections) in *crab_script.py* 
 - Chech what is being applied for each production in the script:
    https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/crab/crab_script.py 
 
+## Merge the output trees
+Use the instructions in this repository:
+    https://github.com/GonzalezFJR/xtools
