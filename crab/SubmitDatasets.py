@@ -78,7 +78,8 @@ def GuessIsData(path):
       else: return True
 
 def GuessYear(path):
-  if   'Run2018' in path: return 18
+  if   '5TeV' in path or '5tev' in path or '5p02' in path:  return 5
+  elif 'Run2018' in path: return 18
   elif 'Run2017' in path: return 17
   elif 'Run2016' in path: return 16
   elif '2018'    in path: return 18
@@ -129,6 +130,10 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
       #'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
       lumijson = 'Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
     #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
+    elif year == 5:
+      print 'Runing on 5.02 TeV DATA!!'
+      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/5TeV/ReReco/Cert_306546-306826_5TeV_EOY2017ReReco_Collisions17_JSON.txt'
+      lumijson = 'Cert_306546-306826_5TeV_EOY2017ReReco_Collisions17_JSON.txt'
 
   # Set according to input parameters
   totalUnits = 10000 # test
@@ -139,8 +144,10 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   #  unitsperjob = 500
   if isTest: totalUnits = 3
   prodTag = productionTag
+  datatype = 'global' #phys03, global
 
-  t_localdir     = "config.General.requestName = '"  + localdir + "_" + prodTag + "'\n"
+  t_localdir     = "config.General.requestName = '"  + localdir[0:70] + "_" + prodTag + "'\n"
+  t_allowCMSSW   = "config.JobType.allowUndistributedCMSSW = True\n"
   if isData:
     t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%s.txt', '../python/postprocessing/json/%s']\n" %(slimeFileName, lumijson)
   else:
@@ -150,7 +157,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   t_unitsperjob  = "config.Data.unitsPerJob = " + str(unitsperjob) + "\n"
   t_splitting    = "config.Data.splitting = '" + strSplitting + "'\n"
   t_basedir      = "config.Data.outLFNDirBase = '" + basedir + "'\n"
-  t_datasetTag = "config.Data.outputDatasetTag = '" + prodTag + "_" + localdir + "'\n" 
+  t_datasetTag = "config.Data.outputDatasetTag = '" + prodTag + "_" + localdir[0:70] + "'\n" 
   t_tier = "config.Site.storageSite = '" + tier + "'\n"
   t_lumiMask = "config.Data.lumiMask = '" + lumiMask + "'\n"
  
@@ -159,10 +166,11 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   text += t_localdir
   text += "config.General.transferLogs=True\nconfig.section_('JobType')\nconfig.JobType.pluginName = 'Analysis'\n"
   text += "config.JobType.psetName = 'PSet.py'\nconfig.JobType.scriptExe = '" + crabScriptSH + "'\nconfig.JobType.sendPythonFolder = True\n"
+  text += t_allowCMSSW
   text += t_inputfiles
   text += "config.section_('Data')\n"
   text += t_inputdataset
-  text += "config.Data.inputDBS = 'global'\n"
+  text += "config.Data.inputDBS = '%s'\n"%datatype
   text += t_splitting
   if isData: text += t_lumiMask
   #else: 
@@ -264,6 +272,7 @@ def __main__():
   parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
   parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
   parser.add_argument('--dataset','-d'    , default=''           , help = 'Submit jobs to run on a given dataset')
+  parser.add_argument('--year','-y'       , default=0            , help = 'Year')
   parser.add_argument('--prodName','-n'   , default=''           , help = 'Give a name to your production')
   parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your producer')
   parser.add_argument('--outTier'    , default='T2_ES_IFCA' , help = 'Your output tier')
@@ -280,12 +289,15 @@ def __main__():
   outTier     = args.outTier
   fname       = args.file
   doDataset   = False if datasetName == '' else True
+  year        = int(args.year)
   
   
   if doDataset:
     if verbose: print 'Creating cfg file for dataset: ', datasetName
     doData = GuessIsData(datasetName)
-    year   = GuessYear(datasetName)
+    if year == 0: year = GuessYear(datasetName)
+    print ' >> Is data?: ', doData
+    print ' >> Year    : ', year
     cfgName = GetName_cfg(datasetName, doData)
     CrateCrab_cfg(datasetName, doData, dotest, prodName, year, options,outTier)
     if not doPretend:
