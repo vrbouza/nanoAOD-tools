@@ -15,6 +15,7 @@ slimfile = "SlimFile.txt"
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.PrefireCorr import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.skimNRecoLeps import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.addTnPvarMuon import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib import *
@@ -41,16 +42,27 @@ jsonfile = runsAndLumis()
 mod = []
 jecfile  = ''
 if not isData: 
-  if   year == 16:  mod.append(puWeight_2016())
-  elif year == 17:  mod.append(puWeight_2017()) # puAutoWeight_2017 
+  if   year == 16:  
+    mod.append(puWeight_2016())
+    mod.append(PrefCorr2016())
+  elif year == 17:  
+    mod.append(puWeight_2017()) # puAutoWeight_2017 
+    mod.append(PrefCorr2017())
   elif year == 18:  
     jecfile  = "Autumn18_V8_MC"
     jecarc   = "Autumn18_V8_MC"
     mod.append(puWeight_2018())
+  elif year == 5:
+    jecfile  = "Spring18_ppRef5TeV_V2_MC"
+    jecarc   = "Spring18_ppRef5TeV_V2_MC"
+    #mod.append()
   else           :  mod.append(puAutoWeight_2017())
 elif year == 18 and era != '': 
   jecfile = 'Autumn18_Run%s_V8_DATA'%era
   jecarc  = 'Autumn18_V8_DATA'
+elif year == 5:
+  jecfile = 'Spring18_ppRef5TeV_V2_DATA'
+  jecarc  = 'Spring18_ppRef5TeV_V2_DATA'
 
 if jecfile != '': mod.append(jetRecalib(jecfile, jecarc))
 
@@ -72,6 +84,7 @@ else:
     if   year == 16: mod.append(jetmetUncertainties2016())
     elif year == 17: mod.append(jetmetUncertainties2017())
     elif year == 18: mod.append(jetmetUncertainties2018())
+    elif year == 5:  mod.append(jetmetUncertainties5TeV())
   if doMuonScale:
     if   year == 16: mod.append(muonScaleRes2016())
     elif year == 17: mod.append(muonScaleRes2017())
