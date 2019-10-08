@@ -1,0 +1,3 @@
+/HighEGJet/jrgonzal-data5TeV_28ago2019_HighEGJet_Run2017G-17Nov2017-v2-e6071589c1d4feaedf45b2e5392eb06a/USER
+/DoubleMuon/jrgonzal-data5TeV_28ago2019_DoubleMuon_Run2017G-17Nov2017-v1-e6071589c1d4feaedf45b2e5392eb06a/USER
+/SingleMuon/jrgonzal-data5TeV_30ago2019_SingleMuon_Run2017G-17Nov2017-v1-e6071589c1d4feaedf45b2e5392eb06a/USER
