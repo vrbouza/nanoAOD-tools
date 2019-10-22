@@ -144,7 +144,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   #  unitsperjob = 500
   if isTest: totalUnits = 3
   prodTag = productionTag
-  datatype = 'global' #phys03, global
+  datatype = 'global' if year != 5 else 'phys03' #phys03, global
 
   t_localdir     = "config.General.requestName = '"  + localdir[0:70] + "_" + prodTag + "'\n"
   t_allowCMSSW   = "config.JobType.allowUndistributedCMSSW = True\n"
