@@ -9,7 +9,6 @@ drop IsoTrack*
 drop L1Reco*
 drop L1simulation*
 drop OtherPV*
-drop Photon*
 drop PuppiMET*
 drop RawMET*
 drop SV*
@@ -67,3 +66,7 @@ keep HLT_PFMET120_PFMHT120_IDTight_PFHT60
 keep HLT_Ele*_WPTight_Gsf
 keep HLT_Ele*_WPLoose_Gsf
 keep HLT_PFMET120_PFMHT120_IDTight_PFHT60
+keep HLT_HIEle20_WPLoose_Gsf
+keep HLT_*Ele20_WPLoose_Gsf
+keep HLT_HIL3Mu20
+keep HLT_*L3Mu20

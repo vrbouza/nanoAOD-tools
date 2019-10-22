@@ -35,6 +35,10 @@ keep HLT_*Mu8*
 keep HLT_*Mu19*
 keep HLT_*Mu9*
 keep HLT_*Mu37*
+keep HLT_HIEle20_WPLoose_Gsf
+keep HLT_*Ele20_WPLoose_Gsf
+keep HLT_HIL3Mu20
+keep HLT_*L3Mu20
 keep TnP_*
 keep Probe_*
 keep Tag_*
