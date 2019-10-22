@@ -8,8 +8,8 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 class skipNRecoLeps(Module):
     def __init__(self, isdata = False, year = 17, recalibjets = '', era = ''):
-        self.minelpt  = 18 # 10 for 5 TeV
-        self.minmupt  = 18 # 10 for 5 TeV
+        self.minelpt  = 18 # 10 for 5 TeV, 18 for 13
+        self.minmupt  = 18 # 10 for 5 TeV, 18 for 13
         self.maxeleta = 2.5
         self.maxmueta = 2.5
         self.isData = isdata
@@ -53,7 +53,7 @@ class skipNRecoLeps(Module):
 
         nlepgood = 0; minpt20 = False
         for mu in muon:
-          if mu.pt > self.minmupt and abs(mu.eta) < self.maxmueta and (mu.tightId or mu.mediumId): 
+          if mu.pt > self.minmupt and abs(mu.eta) < self.maxmueta:# and (mu.tightId or mu.mediumId): 
             nlepgood += 1
             if mu.pt >= 20: minpt20 = True
         for el in elec:
