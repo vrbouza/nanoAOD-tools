@@ -18,11 +18,12 @@ filepath = ['root://cms-xrd-global.cern.ch//store/mc/RunIIAutumn18NanoAODv4/b_bb
 outdir = '.'
 
 ### SKIM 
-cut = '(nElectron + nMuon) >= 2 && Jet_pt > 200' # nGenDressedLepton >= 2
+cut = '(nElectron + nMuon) >= 2 && Jet_pt > 600' # nGenDressedLepton >= 2
 
 ### SLIM FILE
-slimfile = "SlimFile.txt"
-jecfile  = "Autumn18_V8_MC"
+slimfilein  = "SlimFileIn.txt"
+slimfileout = "SlimFileOut.txt"
+jecfile  = "Autumn18_V19_MC"
 
 ### MODULES
 ### Include modules to compute derivate quantities or calculate uncertainties
@@ -31,9 +32,10 @@ from modules.common.puWeightProducer import *
 from modules.common.muonScaleResProducer import *
 from modules.skimNRecoLeps import *
 from modules.jme.jetRecalib import *
+from modules.jme.jetMetCorrelator import *
 #from modules.addSUSYvar import *
 #mod = [puAutoWeight(), skimRecoLeps(), addSUSYvarsMC()] # countHistogramsProducer(), jetmetUncertainties2017All()
-mod = [skimRecoLeps(), muonScaleRes2018()] # jetRecalib(jecfile), countHistogramsProducer(), jetmetUncertainties2017All()
+mod = [skimRecoLeps(), jetmetUncertainties2018All(), jetMetCorrelations2018()] # jetRecalib(jecfile), countHistogramsProducer(), jetmetUncertainties2017All()
 
-p=PostProcessor(outdir,filepath,cut,slimfile,mod,provenance=True,outputbranchsel=slimfile)
+p=PostProcessor(outdir,filepath,cut,slimfilein,mod,provenance=True,outputbranchsel=slimfileout)
 p.run()

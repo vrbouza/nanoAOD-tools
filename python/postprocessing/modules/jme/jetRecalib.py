@@ -9,9 +9,10 @@ from PhysicsTools.NanoAODTools.postprocessing.tools import matchObjectCollection
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.JetReCalibrator import JetReCalibrator
 
 class jetRecalib(Module):
-    def __init__(self,  globalTag, archive, jetType = "AK4PFchs", redoJEC=False):
+    def __init__(self,  globalTag, archive, jetType = "AK4PFchs", redoJEC=True, year = 2018):
 
         self.redoJEC = redoJEC
+        self.year = year
 
         if "AK4" in jetType : 
             self.jetBranchName = "Jet"
@@ -69,7 +70,7 @@ class jetRecalib(Module):
         """process event, return True (go to next module) or False (fail, go to next event)"""
         jets = Collection(event, self.jetBranchName )
         if self.subJetBranchName != "": subJets = Collection(event, self.subJetBranchName )
-        met = Object(event, "MET") 
+        met = Object(event, "MET" if (self.year != 2017 and self.year != 17) else 'METFixEE2017') 
 
         jets_pt_raw = []
         jets_pt_nom = []
