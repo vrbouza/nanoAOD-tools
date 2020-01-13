@@ -40,7 +40,7 @@ To send jobs, run *SubmitDataset.py*. Try to execute it with no options to obtai
 
 To process a single dataset:
 
-    python SubmitDatasets.py --datasets [DATASET] --outTier [T2_ES_IFCA] --prodName jul20 --year 17
+    python SubmitDatasets.py --datasets [DATASET] --outTier [T2_ES_IFCA] --prodName nanoAODv6_13jan2020 --year 17
 
 Use the option *--test* to send a few short jobs or the option *--pretend* to create the files and not run on them.
 
