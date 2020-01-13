@@ -27,13 +27,21 @@ Move to the directory:
  
     cd PhysicsTools/NanoAODTools/crab
 
-To send jobs, run *SubmitDataset.py* as in the example:
+To send jobs, run *SubmitDataset.py*. Try to execute it with no options to obtain info and examples. To process a single dataset:
 
-    python SubmitDatasets.py datasets/data2017.txt --prodName myProd2017_DDMMYY
+    python SubmitDatasets.py --datasets [DATASET] --outTier [T2_ES_IFCA] --prodName jul20 --year 17
+
+You can process all files from a text file using a txt file as output as in the example below. You can first check if all the datasets are found in crab using the *CheckDatasets.py* script and passing the txt file as an argument.
+
+    python SubmitDatasets.py datasets/data2017.txt --prodName myProductiondata2017_22feb2020
+
+Use the option *--test* to send a few short jobs or the option *--pretend* to create the files and not run on them.
 
 To check the status of the jobs:
 
     python CheckJobs.py --tag myProd2017_DDMMYY
+    
+Add the option *-a* to auto-resubmit all failed jobs.
 
 ## Some important info:
 
@@ -46,7 +54,7 @@ Check the default configuration (including JEC corrections) in *crab_script.py* 
     https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/modules/skimNRecoLeps.py
 
 - Applies a slim using this file:
-    https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/SlimFile.txt
+    https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/SlimFileOut.txt
 
 - Produces histogram with sum of weights here:
     https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/framework/postprocessor.py
