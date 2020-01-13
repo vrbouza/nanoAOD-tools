@@ -13,6 +13,13 @@ You need to install a recent version of CMSSW
 Clone the code from the Oviedo-PAF group.
 
     git clone https://github.com/Oviedo-PAF/nanoAOD-tools.git PhysicsTools/NanoAODTools
+
+Change to this branch:
+
+    git checkout -b nanoAODv6_13jan2020
+
+Compile:
+
     scram b
 
 ## How to run on CRAB
