@@ -10,9 +10,11 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputF
 cut = '(nElectron + nMuon) >= 2'
 
 ### SLIM FILE
-slimfile = "SlimFile.txt"
+slimfilein  = "SlimFileIn.txt"
+slimfileout = "SlimFileOut.txt"
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetMetCorrelator import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.PrefireCorr import *
@@ -28,6 +30,7 @@ doJECunc = True
 doMuonScale = True
 if         '18' in sys.argv[-1] : year = 18
 elif       '16' in sys.argv[-1] : year = 16
+elif        '5' in sys.argv[-1] : year =  5
 else                            : year = 17
 era = '' if not 'era' in sys.argv[-1] else sys.argv[-1][sys.argv[-1].find('era')+3:sys.argv[-1].find('era')+4]
 if era !='': print '>Found era: ', era
@@ -43,15 +46,15 @@ mod = []
 jecfile  = ''
 if not isData: 
   if   year == 16:  
-    mod.append(puWeight_2016())
+    mod.append(puAutoWeight_2016())
     mod.append(PrefCorr2016())
   elif year == 17:  
-    mod.append(puWeight_2017()) # puAutoWeight_2017 
+    mod.append(puAutoWeight_2017()) # puAutoWeight_2017 
     mod.append(PrefCorr2017())
   elif year == 18:  
-    jecfile  = "Autumn18_V8_MC"
-    jecarc   = "Autumn18_V8_MC"
-    mod.append(puWeight_2018())
+    #jecfile  = "Autumn18_V19_MC"
+    #jecarc   = "Autumn18_V19_MC"
+    mod.append(puAutoWeight_2018())
   elif year == 5:
     jecfile  = "Spring18_ppRef5TeV_V2_MC"
     jecarc   = "Spring18_ppRef5TeV_V2_MC"
@@ -64,7 +67,9 @@ elif year == 5:
   jecfile = 'Spring18_ppRef5TeV_V2_DATA'
   jecarc  = 'Spring18_ppRef5TeV_V2_DATA'
 
-if jecfile != '': mod.append(jetRecalib(jecfile, jecarc))
+if jecfile != '': 
+  print 'JEC file: ', jecfile
+  mod.append(jetRecalib(jecfile, jecarc, redoJEC = True, year=year))
 
 if doTnP:
   if isData:
@@ -75,29 +80,37 @@ if doTnP:
     if   year == 17: mod.append(addTnPMuon17())
     elif year == 16: mod.append(addTnPMuon16())
     elif year == 18: mod.append(addTnPMuonForMoriond18())
-  slimfile = "SlimFileTnP.txt"
+  slimfilein = "SlimFileTnP.txt"
+  slimfileout = "SlimFileTnP.txt"
   cut = 'nMuon >= 2 && Muon_pt[0] > 25 && Muon_pt[1] >= 12'
 else:
   if not doNotSkim: mod.append(skimRecoLeps())
   else: cut = ''
   if doJECunc and not isData: 
-    if   year == 16: mod.append(jetmetUncertainties2016())
-    elif year == 17: mod.append(jetmetUncertainties2017())
-    elif year == 18: mod.append(jetmetUncertainties2018())
+    if   year == 16: 
+      mod.append(jetmetUncertainties2016All())
+      mod.append(jetMetCorrelations2016())
+    elif year == 17: 
+      mod.append(jetmetUncertainties2017All())
+      mod.append(jetMetCorrelations2017())
+    elif year == 18: 
+      mod.append(jetmetUncertainties2018All())
+      mod.append(jetMetCorrelations2018())
     elif year == 5:  mod.append(jetmetUncertainties5TeV())
   if doMuonScale:
     if   year == 16: mod.append(muonScaleRes2016())
     elif year == 17: mod.append(muonScaleRes2017())
     elif year == 18: mod.append(muonScaleRes2018())
 
-print '>> Slim file: ', slimfile
+print '>> Slim file in : ', slimfilein
+print '>> Slim file out: ', slimfileout
 print '>> cut: ', cut
 print '>> ' + ('Is data!' if isData else 'Is MC!')
 print '>> ' + ('Creating a TnP Tree' if doTnP else 'Creating a skimmed nanoAOD file')
 if doJECunc: print '>> Adding JEC uncertainties'
 
 #mod = [puAutoWeight(),jetmetUncertainties2017All(), skimRecoLeps()]
-p=PostProcessor(".",inputFiles(),cut,slimfile,mod,provenance=True,fwkJobReport=True,jsonInput=jsonfile,outputbranchsel=slimfile) #jsonInput
+p=PostProcessor(".",inputFiles(),cut,slimfilein,mod,provenance=True,fwkJobReport=True,jsonInput=jsonfile,outputbranchsel=slimfileout) #jsonInput
 p.run()
 
 print "DONE"
