@@ -136,7 +136,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
       lumijson = 'Cert_306546-306826_5TeV_EOY2017ReReco_Collisions17_JSON.txt'
 
   # Set according to input parameters
-  totalUnits = 10000 # test
+  totalUnits = 3000 # test
 
   # Set as MC... the only way the Count histogram works!! --> So we can compare with the numbers in DAS
   #if isData: 
@@ -149,9 +149,9 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   t_localdir     = "config.General.requestName = '"  + localdir[0:70] + "_" + prodTag + "'\n"
   t_allowCMSSW   = "config.JobType.allowUndistributedCMSSW = True\n"
   if isData:
-    t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%s.txt', '../python/postprocessing/json/%s']\n" %(slimeFileName, lumijson)
+    t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%sIn.txt', '../python/postprocessing/%sOut.txt', '../python/postprocessing/json/%s']\n" %(slimeFileName, slimeFileName, lumijson)
   else:
-    t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%s.txt']\n" %(slimeFileName)
+    t_inputfiles   = "config.JobType.inputFiles = ['" + crabScript + "','../scripts/haddnano.py', '../python/postprocessing/%sIn.txt', '../python/postprocessing/%sOut.txt']\n" %(slimeFileName, slimeFileName)
   t_inputdataset = "config.Data.inputDataset = '" + datasetName + "'\n" 
   t_totalunits   = "config.Data.totalUnits = " + str(totalUnits) + "\n"
   t_unitsperjob  = "config.Data.unitsPerJob = " + str(unitsperjob) + "\n"

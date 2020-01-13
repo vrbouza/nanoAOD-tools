@@ -15,7 +15,7 @@ def GetLine(fulltext, find):
 def GC(n = -1):
   return '\033[0m' if n < 0 else '\033[1;3%im'%n
 
-def CheckStatus(dirname, verbose = 1, autoResubmit = True, pretend = False):
+def CheckStatus(dirname, verbose = 1, autoResubmit = True, pretend = False, forceResubmit = False):
   if not os.path.isdir(dirname): return
   command = 'crab status -d ' + dirname
   if pretend: 
@@ -43,6 +43,7 @@ def CheckStatus(dirname, verbose = 1, autoResubmit = True, pretend = False):
     if run != '': print '  # ' + GC(2) + run[:run.find(' ')] + '\t' + GC(4) + run[run.find(' '):]+GC()
     if fai != '': print '  # ' + GC(2) + fai[:fai.find(' ')] + '\t' + GC(4) + fai[fai.find(' '):]+GC()
   if   status == 'FAILED' and autoResubmit: Resubmit(dirname, verbose)
+  elif status == 'SUBMITTED' and forceResubmit: Resubmit(dirname, verbose)
   elif status == 'SUBMITFAILED' and autoResubmit: CrabSubmit(dirname, verbose)
   #if status == 'SUBMITTED':
 
@@ -87,13 +88,13 @@ def Resubmit(dirname, verbose = 1, pretend = False):
   os.system(command)# + ' >> /dev/null')
   if verbose >= 2: print GC(3) + 'Done!' + GC()
 
-def CheckJobs(path = './', dirstart = 'crab_', date = '', verbose = 1, autoResubmit = False, tag = ''):
+def CheckJobs(path = './', dirstart = 'crab_', date = '', verbose = 1, autoResubmit = False, tag = '', forceResubmit = False):
   for d in os.listdir(path):
     if not os.path.isdir(path + '/' + d): continue
     if date != '' and date != GetDirDate(path + '/' + d): continue
     if not d.startswith(dirstart): continue
     if tag != '' and not tag in d: continue
-    CheckStatus(path+'/'+d, verbose, autoResubmit)
+    CheckStatus(path+'/'+d, verbose, autoResubmit, forceResubmit=forceResubmit)
 
 ##################################################################################################################
 import argparse
@@ -106,12 +107,14 @@ parser.add_argument('--dir',  type = str, help ='Folder name must start with thi
 parser.add_argument('--tag',  type = str, help ='String that must be contained in the folder name')
 parser.add_argument("-v", "--verbose", type = int,help="Increase output verbosity (1 by default)")
 parser.add_argument("-a", "--auto", action='store_true',help="Resubmit faling jobs automatically")
+parser.add_argument("-f", "--force", action='store_true',help="Send resubmition also when SUBMITED status")
 args = parser.parse_args()
 date = args.date
 path = args.path
 dirn = args.dir
 verb = args.verbose
 auto = args.auto
+force = args.force
 tag  = args.tag
 if date == None: date = ''
 if path == None: path = './'
@@ -119,6 +122,7 @@ if dirn == None: dirn = 'crab_'
 if verb == None: verb = 1
 if auto == None: auto = 0
 if tag  == None: tag  = ''
+if force== None: force = False
 
-CheckJobs(path, dirn, date, verb, auto, tag)
+CheckJobs(path, dirn, date, verb, auto, tag, force)
 
