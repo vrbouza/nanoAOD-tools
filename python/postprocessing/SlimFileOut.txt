@@ -18,6 +18,24 @@ drop Tau*
 drop TkMET*
 drop TrigObj*
 
+drop Jet_pt_*
+drop Jet_phi_*
+drop Jet_mass_*
+drop MET_pt_*
+drop MET_phi_*
+
+keep Jet_*_nom
+keep MET_*_nom
+keep Jet_*_raw
+keep Jet_*_jerUp
+keep Jet_*_jerDown
+keep Jet_*_jesTotalUp
+keep Jet_*_jesTotalDown
+keep Jet_*_jesTotalCorrUp
+keep Jet_*_jesTotalCorrDown
+keep Jet_*_jesTotalUnCorrUp
+keep Jet_*_jesTotalUnCorrDown
+
 #drop GenPart*
 
 # Select these trigger paths:
