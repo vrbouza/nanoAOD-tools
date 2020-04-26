@@ -12,7 +12,7 @@ You need to install a recent version of CMSSW
 
 Clone the code from the Oviedo-PAF group.
 
-    git clone https://github.com/Oviedo-PAF/nanoAOD-tools.git PhysicsTools/NanoAODTools
+    git clone https://github.com/GonzalezFJR/nanoAOD-tools.git PhysicsTools/NanoAODTools
     scram b
 
 ## How to run on CRAB
@@ -51,19 +51,19 @@ Check the default configuration (including JEC corrections) in *crab_script.py* 
 
 #### What is this doing? It reads a nanoAOD and:
 - Applies a skim, using:
-    https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/modules/skimNRecoLeps.py
+    https://github.com/GonzalezFJR/nanoAOD-tools/blob/master/python/postprocessing/modules/skimNRecoLeps.py
 
 - Applies a slim using this file:
-    https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/SlimFileOut.txt
+    https://github.com/GonzalezFJR/nanoAOD-tools/blob/master/python/postprocessing/SlimFileOut.txt
 
 - Produces histogram with sum of weights here:
-    https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/python/postprocessing/framework/postprocessor.py
+    https://github.com/GonzalezFJR/nanoAOD-tools/blob/master/python/postprocessing/framework/postprocessor.py
 
 - Uses modules to produce PU weights, prefire weights, JEC uncertainties, Rochester corrections... the modules are in:
-    https://github.com/Oviedo-PAF/nanoAOD-tools/tree/master/python/postprocessing/modules
+    https://github.com/GonzalezFJR/nanoAOD-tools/tree/master/python/postprocessing/modules
 
 - Chech what is being applied for each production in the script:
-   https://github.com/Oviedo-PAF/nanoAOD-tools/blob/master/crab/crab_script.py 
+   https://github.com/GonzalezFJR/nanoAOD-tools/blob/master/crab/crab_script.py 
 
 ## Merge the output trees
 Use the instructions in this repository:
