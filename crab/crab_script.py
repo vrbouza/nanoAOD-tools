@@ -46,26 +46,30 @@ mod = []
 jecfile  = ''
 if not isData: 
   if   year == 16:  
-    mod.append(puAutoWeight_2016())
+    mod.append(puWeight_2016())
     mod.append(PrefCorr2016())
   elif year == 17:  
-    mod.append(puAutoWeight_2017()) # puAutoWeight_2017 
+    mod.append(puWeight_2017()) # puAutoWeight_2017 
     mod.append(PrefCorr2017())
   elif year == 18:  
     #jecfile  = "Autumn18_V19_MC"
     #jecarc   = "Autumn18_V19_MC"
-    mod.append(puAutoWeight_2018())
+    mod.append(puWeight_2018())
   elif year == 5:
-    jecfile  = "Spring18_ppRef5TeV_V2_MC"
-    jecarc   = "Spring18_ppRef5TeV_V2_MC"
+    mod.append(puWeight_5TeV())
+    mod.append(PrefCorr5TeV())
+    jecfile  = "Spring18_ppRef5TeV_V4_MC"
+    jecarc   = "Spring18_ppRef5TeV_V4_MC"
     #mod.append()
-  else           :  mod.append(puAutoWeight_2017())
-elif year == 18 and era != '': 
-  jecfile = 'Autumn18_Run%s_V8_DATA'%era
-  jecarc  = 'Autumn18_V8_DATA'
+  else           :  mod.append(puWeight_2017())
+#elif year == 18 and era != '': 
+#  jecfile = 'Autumn18_Run%s_V8_DATA'%era
+#  jecarc  = 'Autumn18_V8_DATA'
 elif year == 5:
-  jecfile = 'Spring18_ppRef5TeV_V2_DATA'
-  jecarc  = 'Spring18_ppRef5TeV_V2_DATA'
+  jecfile = 'Spring18_ppRef5TeV_V4_DATA'
+  jecarc  = 'Spring18_ppRef5TeV_V4_DATA'
+  #jecfile = 'Spring18_ppRef5TeV_V2_DATA'
+  #jecarc  = 'Spring18_ppRef5TeV_V2_DATA'
 
 if jecfile != '': 
   print 'JEC file: ', jecfile
@@ -101,6 +105,7 @@ else:
     if   year == 16: mod.append(muonScaleRes2016())
     elif year == 17: mod.append(muonScaleRes2017())
     elif year == 18: mod.append(muonScaleRes2018())
+    elif year ==  5: mod.append(muonScaleRes2017())
 
 print '>> Slim file in : ', slimfilein
 print '>> Slim file out: ', slimfileout

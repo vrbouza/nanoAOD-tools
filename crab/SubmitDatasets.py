@@ -128,7 +128,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
     elif year == 18: 
       lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
       #'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
-      lumijson = 'Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
+      lumijson = 'Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
     #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
     elif year == 5:
       print 'Runing on 5.02 TeV DATA!!'
@@ -145,6 +145,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   if isTest: totalUnits = 3
   prodTag = productionTag
   datatype = 'global' if year != 5 else 'phys03' #phys03, global
+  #datatype = 'phys03'
 
   t_localdir     = "config.General.requestName = '"  + localdir[0:70] + "_" + prodTag + "'\n"
   t_allowCMSSW   = "config.JobType.allowUndistributedCMSSW = True\n"
@@ -171,6 +172,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   text += "config.section_('Data')\n"
   text += t_inputdataset
   text += "config.Data.inputDBS = '%s'\n"%datatype
+  text += "config.Data.allowNonValidInputDataset = True\n"
   text += t_splitting
   if isData: text += t_lumiMask
   #else: 
@@ -204,7 +206,7 @@ def ReadLines(path):
   return lines
 
 
-def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = False, options = ''):
+def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = False, options = '', outTier='T2_ES_IFCA'):
   path = CheckPathDataset(path)
   if(path == ''):
     print 'ERROR: dataset not found'
@@ -219,7 +221,7 @@ def SubmitDatasets(path, isTest = False, prodName = 'prodTest', doPretend = Fals
     print 'line = ', line
     if verbose: print 'Creating cfg file for dataset: ', line
     if verbose: print '%s!! year = %s, options = %s'%('Data' if isData else 'MC', year, options) 
-    CrateCrab_cfg(line, isData, isTest, prodName, year, options)
+    CrateCrab_cfg(line, isData, isTest, prodName, year, options, outTier)
     if not doPretend:
       os.system('crab submit -c ' + cfgName)
       if not os.path.isdir(prodName): os.mkdir(prodName)
@@ -255,7 +257,7 @@ if narg == 0:
   print ' >   Only creates the cfg file; does not send jobs'
   print ' > --options'
   print ' >   Add different options... as --options "TnP" or --options "2018,data"'
-  print ' > --outTier'
+  print ' > --nutTier'
   print ' >   Select your Tier... by default: T2_ES_IFCA'
   print ' '
   print ' > Examples:'
@@ -306,7 +308,7 @@ def __main__():
       os.rename(cfgName, prodName + '/' + cfgName)
       #os.remove(cfgName)
   else:
-    SubmitDatasets(fname, dotest, prodName, doPretend, options)
+    SubmitDatasets(fname, dotest, prodName, doPretend, options, outTier)
   
 if __name__ == '__main__':
   __main__()
