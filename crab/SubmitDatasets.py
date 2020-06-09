@@ -53,6 +53,10 @@ def GetName_cfg(datasetName, isData = False):
   genTag = genTag[:genTag[1:].find('/')+1]
   a = genTag.find('_ext')
   if a > 0: tag += genTag[a+1:a+5]
+  a = genTag.find('_new_pmx')
+  if a > 0: tag += genTag[a+1:a+8]
+  a = genTag.find('_backup')
+  if a > 0: tag += genTag[a+1:a+7]
   if(isData): tag += genTag.replace('/','_')
   filename = 'crab_cfg_' + tag + '.py'
   return filename
