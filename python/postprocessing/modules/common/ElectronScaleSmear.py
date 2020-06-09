@@ -76,13 +76,13 @@ class ElectronScaleSmear(Module):
         seed = el.seedGain if hasattr(el, 'seedGain') else 12
         ecor = el.eCorr if hasattr(el, 'eCorr') else 1
         et = p.Et()
-        abseta = abs(p.Eta())
+        abseta = abs(p.Eta()+el.deltaEtaSC)
         if self.isData:
           if not self.doApplyCor: return True
           # Apply scale to data
           praw = p*(1./ecor) # Correct back
           et = praw.Et()
-          abseta = abs(praw.Eta())
+          abseta = abs(praw.Eta()+el.deltaEtaSC)
           escale = self.eleCorr.scaleCorr(run, et, abseta, r9)
           vEle = praw*escale
           elecPtNom.append(vEle.Pt())
@@ -91,7 +91,7 @@ class ElectronScaleSmear(Module):
           if self.doApplyCor: # Apply smear to MC
             praw = p*(1./ecor) # Correct back
             et = praw.Et()
-            abseta = abs(praw.Eta())
+            abseta = abs(praw.Eta()+el.deltaEtaSC)
             eleSmear = self.eleCorr.smearingSigma(run, et, abseta, r9, 12, 0, 0.)
             vEle = praw*(1+eleSmear*nrandom)
             elecPtNom.append(vEle.Pt())
