@@ -16,7 +16,7 @@ def GetEntriesDAS(sample, verbose = False, pretend = False):
   nev = d['nevents']
   nfiles = d['nfiles']
   #print '%s: %i'%(FixStringLength(sample), nfiles)
-  print '%s: %i'%(sample, nev)
+  print '{%s} & %i & 1 \\\\'%(sample, nev)
 
 def FixStringLength(s, n = 45):
   while len(s) < n: s += ' '
