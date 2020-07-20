@@ -127,3 +127,6 @@ PrefCorr2016 = lambda: PrefCorr(jetroot="L1prefiring_jetpt_2016BtoH.root", jetma
 
 PrefCorr2017 = lambda: PrefCorr(jetroot="L1prefiring_jetpt_2017BtoF.root", jetmapname="L1prefiring_jetpt_2017BtoF",
                  photonroot="L1prefiring_photonpt_2017BtoF.root", photonmapname="L1prefiring_photonpt_2017BtoF")
+
+PrefCorr5TeV = lambda: PrefCorr(jetroot="L1prefiring_jetpt_2017G.root", jetmapname="L1prefiring_jetpt_2017G",
+                 photonroot="L1prefiring_photonpt_2017G.root", photonmapname="L1prefiring_photonpt_2017G")

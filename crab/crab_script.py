@@ -17,6 +17,7 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties im
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetMetCorrelator import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.ElectronScaleSmear import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.PrefireCorr import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.skimNRecoLeps import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.addTnPvarMuon import *
@@ -26,8 +27,9 @@ doNotSkim = 'noskim' in sys.argv[-1] or 'noSkim' in sys.argv[-1]
 doTnP     = 'TnP'  in sys.argv[-1]
 doJECunc  = 'JEC'  in sys.argv[-1]
 doMuonScale = 'muScale' in sys.argv[-1]
-doJECunc = True
+doJECunc    = True
 doMuonScale = True
+doElecScale = True
 if         '18' in sys.argv[-1] : year = 18
 elif       '16' in sys.argv[-1] : year = 16
 elif        '5' in sys.argv[-1] : year =  5
@@ -46,26 +48,30 @@ mod = []
 jecfile  = ''
 if not isData: 
   if   year == 16:  
-    mod.append(puAutoWeight_2016())
+    mod.append(puWeight_2016())
     mod.append(PrefCorr2016())
   elif year == 17:  
-    mod.append(puAutoWeight_2017()) # puAutoWeight_2017 
+    mod.append(puWeight_2017()) # puAutoWeight_2017 
     mod.append(PrefCorr2017())
   elif year == 18:  
     #jecfile  = "Autumn18_V19_MC"
     #jecarc   = "Autumn18_V19_MC"
-    mod.append(puAutoWeight_2018())
+    mod.append(puWeight_2018())
   elif year == 5:
-    jecfile  = "Spring18_ppRef5TeV_V2_MC"
-    jecarc   = "Spring18_ppRef5TeV_V2_MC"
+    mod.append(puWeight_5TeV())
+    mod.append(PrefCorr5TeV())
+    jecfile  = "Spring18_ppRef5TeV_V4_MC"
+    jecarc   = "Spring18_ppRef5TeV_V4_MC"
     #mod.append()
-  else           :  mod.append(puAutoWeight_2017())
-elif year == 18 and era != '': 
-  jecfile = 'Autumn18_Run%s_V8_DATA'%era
-  jecarc  = 'Autumn18_V8_DATA'
+  else           :  mod.append(puWeight_2017())
+#elif year == 18 and era != '': 
+#  jecfile = 'Autumn18_Run%s_V8_DATA'%era
+#  jecarc  = 'Autumn18_V8_DATA'
 elif year == 5:
-  jecfile = 'Spring18_ppRef5TeV_V2_DATA'
-  jecarc  = 'Spring18_ppRef5TeV_V2_DATA'
+  jecfile = 'Spring18_ppRef5TeV_V4_DATA'
+  jecarc  = 'Spring18_ppRef5TeV_V4_DATA'
+  #jecfile = 'Spring18_ppRef5TeV_V2_DATA'
+  #jecarc  = 'Spring18_ppRef5TeV_V2_DATA'
 
 if jecfile != '': 
   print 'JEC file: ', jecfile
@@ -101,6 +107,16 @@ else:
     if   year == 16: mod.append(muonScaleRes2016())
     elif year == 17: mod.append(muonScaleRes2017())
     elif year == 18: mod.append(muonScaleRes2018())
+    elif year ==  5: mod.append(muonScaleRes2017())
+  if doElecScale:
+    if year ==  5: 
+      if isData: mod.append(elecScale5TeVData())
+      else     : mod.append(elecScale5TeVMC())
+    if not isData:
+      if   year == 16: mod.append(elecUnc2016MC())
+      elif year == 17: mod.append(elecUnc2017MC())
+      elif year == 18: mod.append(elecUnc2018MC())
+    elif year == 17: mod.append(elecScale2017Data())
 
 print '>> Slim file in : ', slimfilein
 print '>> Slim file out: ', slimfileout

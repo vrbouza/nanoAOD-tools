@@ -55,8 +55,8 @@ class jetMetCorrelator(Module):
 
         """To correct the MET"""
         met = Object(event, self.metbranch)
-        metPt  = getattr(met, "pt", "pt") #pt_nom
-        metPhi = getattr(met, "phi", "phi") #phi_nom
+        metPt  = getattr(met, "pt_nom", "pt")# if self.metbranch == "MET" else getattr(met, "pt", "pt")#pt_nom
+        metPhi = getattr(met, "phi_nom", "phi")# if self.metbranch == "MET" else getattr(met, "phi", "phi") #phi_nom
         metPx  = metPt*math.cos(metPhi)
         metPy  = metPt*math.sin(metPhi)
         metPxCUp   = metPx
@@ -70,9 +70,9 @@ class jetMetCorrelator(Module):
 
         for j in jets:
             """If already recorrected, use the recorrected pT as nominal"""
-            thePt  = getattr(j, "pt", "pt") # pt_nom
+            thePt  = getattr(j, "pt_nom", "pt") # pt_nom
             thePhi = getattr(j, "phi") 
-            theMass= getattr(j, "mass")
+            theMass= getattr(j, "mass_nom")
             jetCUp.append(0.)
             jetCDown.append(0.)
             jetUUp.append(0.)
@@ -100,8 +100,8 @@ class jetMetCorrelator(Module):
             metPxUDown = metPxUDown + jetUDown[-1]*math.cos(thePhi)
             metPyUDown = metPyUDown + jetUDown[-1]*math.sin(thePhi)
             """Save the values, not the variations"""
-            jetCUp[-1]   = thePt + jetCUp[-1]
-            jetUUp[-1]   = thePt + jetUUp[-1]
+            jetCUp[-1]  += thePt
+            jetUUp[-1]  += thePt
             jetCDown[-1] = thePt - jetCDown[-1]
             jetUDown[-1] = thePt - jetUDown[-1]
             jetCMUp[-1]   = theMass + jetCMUp[-1]

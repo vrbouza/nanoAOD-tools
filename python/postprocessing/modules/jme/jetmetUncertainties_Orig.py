@@ -10,8 +10,8 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetSmearer import jetS
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.JetReCalibrator import JetReCalibrator
 
 class jetmetUncertaintiesProducer(Module):
-    def __init__(self, era, globalTag, jesUncertainties = [ "Total" ], jetType = "AK4PFchs", redoJEC=True, noGroom=False, setOutput=False):
-        self.setOutput = setOutput
+    def __init__(self, era, globalTag, jesUncertainties = [ "Total" ], jetType = "AK4PFchs", redoJEC=True, noGroom=False):
+
         self.era = era
         self.redoJEC = redoJEC
         self.noGroom = noGroom
@@ -23,21 +23,12 @@ class jetmetUncertaintiesProducer(Module):
         self.jesUncertainties = jesUncertainties
 
         # smear jet pT to account for measured difference in JER between data and simulation.
-        if self.era == "2016":
+        if era == "2016":
             self.jerInputFileName = "Summer16_25nsV1_MC_PtResolution_" + jetType + ".txt"
             self.jerUncertaintyInputFileName = "Summer16_25nsV1_MC_SF_" + jetType + ".txt"
-
-        if self.era == "2017":
+        elif era == "2017" or era == "2018": # use Fall17 as temporary placeholder until post-Moriond 2019 JERs are out
             self.jerInputFileName = "Fall17_V3_MC_PtResolution_" + jetType + ".txt"
             self.jerUncertaintyInputFileName = "Fall17_V3_MC_SF_" + jetType + ".txt"
-
-        if self.era == "2018":
-            #self.jerInputFileName = "Autumn18_V1_MC_PtResolution_" + jetType + ".txt"
-            #self.jerUncertaintyInputFileName = "Autumn18_V1_MC_SF_" + jetType + ".txt"
-            self.jerInputFileName = "Fall17_V3_MC_PtResolution_" + jetType + ".txt"
-            self.jerUncertaintyInputFileName = "Fall17_V3_MC_SF_" + jetType + ".txt"
-            #self.jerInputFileName = "Autumn18_V7_MC_PtResolution_" + jetType + ".txt"
-            #self.jerUncertaintyInputFileName = "Autumn18_V7_MC_SF_" + jetType + ".txt"
 
         #jet mass resolution: https://twiki.cern.ch/twiki/bin/view/CMS/JetWtagging
         #2016 values
@@ -71,8 +62,7 @@ class jetmetUncertaintiesProducer(Module):
             self.corrMET = False
         else:
             raise ValueError("ERROR: Invalid jet type = '%s'!" % jetType)
-        self.metBranchName = "MET" if (self.era != 2017 and self.era != 17 and self.era != '2017' and self.era != '17') else 'METFixEE2017'
-        if globalTag == "Spring18_ppRef5TeV_V4_MC": self.metBranchName = "MET"
+        self.metBranchName = "MET" if (self.era != 2017 and self.era != 17) else 'METFixEE2017'
         self.rhoBranchName = "fixedGridRhoFastjetAll"
         self.lenVar = "n" + self.jetBranchName
 
@@ -175,8 +165,6 @@ class jetmetUncertaintiesProducer(Module):
                 self.out.branch("%s_pt_jer%s" % (self.metBranchName, shift), "F")
                 self.out.branch("%s_phi_jer%s" % (self.metBranchName, shift), "F")
             for jesUncertainty in self.jesUncertainties:
-                if jesUncertainty != "Total": continue
-                #if True: continue #Force not to create branches
                 self.out.branch("%s_pt_jes%s%s" % (self.jetBranchName, jesUncertainty, shift), "F", lenVar=self.lenVar)
                 self.out.branch("%s_mass_jes%s%s" % (self.jetBranchName, jesUncertainty, shift), "F", lenVar=self.lenVar)
                 if self.doGroomed:
@@ -194,10 +182,7 @@ class jetmetUncertaintiesProducer(Module):
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
         jets = Collection(event, self.jetBranchName )
-        nJets = getattr(event, "n" + self.jetBranchName)
         genJets = Collection(event, self.genJetBranchName )
-        setGoodBranch = lambda x,y: self.out.fillBranch(x,y[:nJets]) and setattr(event, x, y)
-        setOutput = (lambda x,y : setGoodBranch(x,y)) if self.setOutput else (lambda x,y : setattr(event, x,y))
         
         if self.doGroomed :
             subJets = Collection(event, self.subJetBranchName )
@@ -441,7 +426,6 @@ class jetmetUncertaintiesProducer(Module):
             met_px_unclEnDown  = met_px_unclEnDown + (met_px_nom - met_px)
             met_py_unclEnDown  = met_py_unclEnDown + (met_py_nom - met_py)
 
-        '''
         self.out.fillBranch("%s_pt_raw" % self.jetBranchName, jets_pt_raw)
         self.out.fillBranch("%s_pt_nom" % self.jetBranchName, jets_pt_nom)
         self.out.fillBranch("%s_corr_JEC" % self.jetBranchName, jets_corr_JEC)
@@ -502,81 +486,12 @@ class jetmetUncertaintiesProducer(Module):
             self.out.fillBranch("%s_phi_unclustEnUp" % self.metBranchName, math.atan2(met_py_unclEnUp, met_px_unclEnUp))
             self.out.fillBranch("%s_pt_unclustEnDown" % self.metBranchName, math.sqrt(met_px_unclEnDown**2 + met_py_unclEnDown**2))
             self.out.fillBranch("%s_phi_unclustEnDown" % self.metBranchName, math.atan2(met_py_unclEnDown, met_px_unclEnDown))
-        '''
-            
-        setGoodBranch("%s_pt_nom" % self.jetBranchName, jets_pt_nom)
-        setGoodBranch("%s_corr_JEC" % self.jetBranchName, jets_corr_JEC)
-        setGoodBranch("%s_corr_JER" % self.jetBranchName, jets_corr_JER)
-        setGoodBranch("%s_pt_jerUp" % self.jetBranchName, jets_pt_jerUp)
-        setGoodBranch("%s_pt_jerDown" % self.jetBranchName, jets_pt_jerDown)
-        setGoodBranch("%s_mass_nom" % self.jetBranchName, jets_mass_nom)
-        setGoodBranch("%s_mass_jerUp" % self.jetBranchName, jets_mass_jerUp)
-        setGoodBranch("%s_mass_jerDown" % self.jetBranchName, jets_mass_jerDown)
-        setGoodBranch("%s_mass_jmrUp" % self.jetBranchName, jets_mass_jmrUp)
-        setGoodBranch("%s_mass_jmrDown" % self.jetBranchName, jets_mass_jmrDown)
-        setGoodBranch("%s_mass_jmsUp" % self.jetBranchName, jets_mass_jmsUp)
-        setGoodBranch("%s_mass_jmsDown" % self.jetBranchName, jets_mass_jmsDown)
-            
-        if self.doGroomed :
 
-            setGoodBranch("%s_msoftdrop_nom" % self.jetBranchName, jets_msdcorr_nom)
-            setGoodBranch("%s_msoftdrop_jerUp" % self.jetBranchName, jets_msdcorr_jerUp)
-            setGoodBranch("%s_msoftdrop_jerDown" % self.jetBranchName, jets_msdcorr_jerDown)
-            setGoodBranch("%s_msoftdrop_jmrUp" % self.jetBranchName, jets_msdcorr_jmrUp)
-            setGoodBranch("%s_msoftdrop_jmrDown" % self.jetBranchName, jets_msdcorr_jmrDown)
-            setGoodBranch("%s_msoftdrop_jmsUp" % self.jetBranchName, jets_msdcorr_jmsUp)
-            setGoodBranch("%s_msoftdrop_jmsDown" % self.jetBranchName, jets_msdcorr_jmsDown)
-
-            
-        if self.corrMET :
-            self.out.fillBranch("%s_pt_nom" % self.metBranchName, math.sqrt(met_px_nom**2 + met_py_nom**2))
-            self.out.fillBranch("%s_phi_nom" % self.metBranchName, math.atan2(met_py_nom, met_px_nom))        
-            self.out.fillBranch("%s_pt_jerUp" % self.metBranchName, math.sqrt(met_px_jerUp**2 + met_py_jerUp**2))
-            self.out.fillBranch("%s_phi_jerUp" % self.metBranchName, math.atan2(met_py_jerUp, met_px_jerUp))        
-            self.out.fillBranch("%s_pt_jerDown" % self.metBranchName, math.sqrt(met_px_jerDown**2 + met_py_jerDown**2))
-            self.out.fillBranch("%s_phi_jerDown" % self.metBranchName, math.atan2(met_py_jerDown, met_px_jerDown))
-            
-        for jesUncertainty in self.jesUncertainties:
-            if jesUncertainty == "Total":
-                setGoodBranch("%s_pt_jes%sUp" % (self.jetBranchName, jesUncertainty), jets_pt_jesUp[jesUncertainty])
-                setGoodBranch("%s_pt_jes%sDown" % (self.jetBranchName, jesUncertainty), jets_pt_jesDown[jesUncertainty])
-                setGoodBranch("%s_mass_jes%sUp" % (self.jetBranchName, jesUncertainty), jets_mass_jesUp[jesUncertainty])
-                setGoodBranch("%s_mass_jes%sDown" % (self.jetBranchName, jesUncertainty), jets_mass_jesDown[jesUncertainty])
-            else:
-                setOutput("%s_pt_jes%sUp" % (self.jetBranchName, jesUncertainty), jets_pt_jesUp[jesUncertainty])
-                setOutput("%s_pt_jes%sDown" % (self.jetBranchName, jesUncertainty), jets_pt_jesDown[jesUncertainty])
-                setOutput("%s_mass_jes%sUp" % (self.jetBranchName, jesUncertainty), jets_mass_jesUp[jesUncertainty])
-                setOutput("%s_mass_jes%sDown" % (self.jetBranchName, jesUncertainty), jets_mass_jesDown[jesUncertainty])
-
-            if self.doGroomed : 
-                setGoodBranch("%s_msoftdrop_jes%sUp" % (self.jetBranchName, jesUncertainty), jets_msdcorr_jesUp[jesUncertainty])
-                setGoodBranch("%s_msoftdrop_jes%sDown" % (self.jetBranchName, jesUncertainty), jets_msdcorr_jesDown[jesUncertainty])
-                
-            
-            if self.corrMET and jesUncertainty== "Total":
-                self.out.fillBranch("%s_pt_jes%sUp" % (self.metBranchName, jesUncertainty), math.sqrt(met_px_jesUp[jesUncertainty]**2 + met_py_jesUp[jesUncertainty]**2))
-                self.out.fillBranch("%s_phi_jes%sUp" % (self.metBranchName, jesUncertainty), math.atan2(met_py_jesUp[jesUncertainty], met_px_jesUp[jesUncertainty]))
-                self.out.fillBranch("%s_pt_jes%sDown" % (self.metBranchName, jesUncertainty), math.sqrt(met_px_jesDown[jesUncertainty]**2 + met_py_jesDown[jesUncertainty]**2))
-                self.out.fillBranch("%s_phi_jes%sDown" % (self.metBranchName, jesUncertainty), math.atan2(met_py_jesDown[jesUncertainty], met_px_jesDown[jesUncertainty]))
-
-            elif self.corrMET:
-                setOutput("%s_pt_jes%sUp" % (self.metBranchName, jesUncertainty), math.sqrt(met_px_jesUp[jesUncertainty]**2 + met_py_jesUp[jesUncertainty]**2))
-                setOutput("%s_phi_jes%sUp" % (self.metBranchName, jesUncertainty), math.atan2(met_py_jesUp[jesUncertainty], met_px_jesUp[jesUncertainty]))
-                setOutput("%s_pt_jes%sDown" % (self.metBranchName, jesUncertainty), math.sqrt(met_px_jesDown[jesUncertainty]**2 + met_py_jesDown[jesUncertainty]**2))
-                setOutput("%s_phi_jes%sDown" % (self.metBranchName, jesUncertainty), math.atan2(met_py_jesDown[jesUncertainty], met_px_jesDown[jesUncertainty]))
-
-
-        if self.corrMET:
-            self.out.fillBranch("%s_pt_unclustEnUp" % self.metBranchName, math.sqrt(met_px_unclEnUp**2 + met_py_unclEnUp**2))
-            self.out.fillBranch("%s_phi_unclustEnUp" % self.metBranchName, math.atan2(met_py_unclEnUp, met_px_unclEnUp))
-            self.out.fillBranch("%s_pt_unclustEnDown" % self.metBranchName, math.sqrt(met_px_unclEnDown**2 + met_py_unclEnDown**2))
-            self.out.fillBranch("%s_phi_unclustEnDown" % self.metBranchName, math.atan2(met_py_unclEnDown, met_px_unclEnDown))
-  
         return True
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-jetmetUncertainties5TeV = lambda : jetmetUncertaintiesProducer("2017", "Spring18_ppRef5TeV_V4_MC", [ "Total" ], redoJEC=True)
-jetmetUncertainties5TeVAll = lambda : jetmetUncertaintiesProducer("2017", "Spring18_ppRef5TeV_V4_MC", [ "All" ], redoJEC=True)
+jetmetUncertainties5TeV = lambda : jetmetUncertaintiesProducer("2017", "Spring18_ppRef5TeV_V2_MC", [ "Total" ])
+jetmetUncertainties5TeVAll = lambda : jetmetUncertaintiesProducer("2017", "Spring18_ppRef5TeV_V2_MC", [ "All" ])
 
 jetmetUncertainties2016 = lambda : jetmetUncertaintiesProducer("2016", "Summer16_07Aug2017_V11_MC", [ "Total" ], redoJEC=False)
 jetmetUncertainties2016All = lambda : jetmetUncertaintiesProducer("2016", "Summer16_07Aug2017_V11_MC", [ "All" ], redoJEC=False)
@@ -584,10 +499,9 @@ jetmetUncertainties2016All = lambda : jetmetUncertaintiesProducer("2016", "Summe
 jetmetUncertainties2017 = lambda : jetmetUncertaintiesProducer("2017", "Fall17_17Nov2017_V32_MC", [ "Total" ], redoJEC=False)
 jetmetUncertainties2017All = lambda : jetmetUncertaintiesProducer("2017", "Fall17_17Nov2017_V32_MC", [ "All" ], redoJEC=False)
 
-jetmetUncertainties2018 = lambda : jetmetUncertaintiesProducer("2018", "Autumn18_V19_MC", [ "Total" ], redoJEC=False)
-jetmetUncertainties2018All = lambda : jetmetUncertaintiesProducer("2018", "Autumn18_V19_MC", [ "All" ], redoJEC=False)
+jetmetUncertainties2018 = lambda : jetmetUncertaintiesProducer("2018", "Autumn18_V8_MC", [ "Total" ], redoJEC=False)
+jetmetUncertainties2018All = lambda : jetmetUncertaintiesProducer("2018", "Autumn18_V8_MC", [ "All" ], redoJEC=False)
 
-'''
 jetmetUncertainties2016AK4Puppi = lambda : jetmetUncertaintiesProducer("2016", "Summer16_07Aug2017_V11_MC", [ "Total" ], jetType="AK4PFPuppi")
 jetmetUncertainties2016AK4PuppiAll = lambda : jetmetUncertaintiesProducer("2016", "Summer16_07Aug2017_V11_MC",  [ "All" ], jetType="AK4PFPuppi")
 
@@ -608,4 +522,3 @@ jetmetUncertainties2017AK8PuppiAll = lambda : jetmetUncertaintiesProducer("2017"
 
 jetmetUncertainties2018AK8Puppi = lambda : jetmetUncertaintiesProducer("2018", "Autumn18_V8_MC", [ "Total" ], jetType="AK8PFPuppi")
 jetmetUncertainties2018AK8PuppiAll = lambda : jetmetUncertaintiesProducer("2018", "Autumn18_V8_MC", ["All"], jetType="AK8PFPuppi",redoJEC = True)
-'''
