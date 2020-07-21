@@ -188,6 +188,8 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   text += t_unitsperjob
   text += t_totalunits
   text += t_basedir
+  if "/USER" in inputDataset:
+    text += "config.Data.inputDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSReader'"
   text += "config.Data.publication = False\n"
   text += t_datasetTag
   text += "config.section_('Site')\n"
