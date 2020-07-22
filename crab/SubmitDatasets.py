@@ -105,6 +105,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   # Set according to username
   username = getpass.getuser()
   basedir = '/store/user/' + username + '/nanoAODcrab'
+  #basedir = '/store/user/rodrigvi/nanoAOD_posprocesado/2020_07_21_pruebinalowpu'
 
   # Detect if it's MC or DATA and set parameters
   strSplitting = "FileBased"; # MC
@@ -188,8 +189,8 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   text += t_unitsperjob
   text += t_totalunits
   text += t_basedir
-  if "/USER" in inputDataset:
-    text += "config.Data.inputDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSReader'"
+  if "/USER" in datasetName:
+    text += "config.Data.inputDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSReader'\n"
   text += "config.Data.publication = False\n"
   text += t_datasetTag
   text += "config.section_('Site')\n"
