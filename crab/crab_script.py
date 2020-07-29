@@ -7,7 +7,8 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputF
 
 ### SKIM 
 #cut = 'Jet_pt > 200 && (nElectron + nMuon) >= 2 && nGenDressedLepton >= 2'
-cut = '(nElectron + nMuon) >= 2'
+#cut = '(nElectron + nMuon) >= 2'
+cut = '(nElectron + nMuon) >= 1'
 
 ### SLIM FILE
 slimfilein  = "SlimFileIn.txt"
@@ -33,6 +34,7 @@ doElecScale = True
 if         '18' in sys.argv[-1] : year = 18
 elif       '16' in sys.argv[-1] : year = 16
 elif        '5' in sys.argv[-1] : year =  5
+elif      '177' in sys.argv[-1] : year = 177
 else                            : year = 17
 era = '' if not 'era' in sys.argv[-1] else sys.argv[-1][sys.argv[-1].find('era')+3:sys.argv[-1].find('era')+4]
 if era !='': print '>Found era: ', era
@@ -62,8 +64,7 @@ if not isData:
     mod.append(PrefCorr5TeV())
     jecfile  = "Spring18_ppRef5TeV_V4_MC"
     jecarc   = "Spring18_ppRef5TeV_V4_MC"
-    #mod.append()
-  else           :  mod.append(puWeight_2017())
+
 #elif year == 18 and era != '': 
 #  jecfile = 'Autumn18_Run%s_V8_DATA'%era
 #  jecarc  = 'Autumn18_V8_DATA'

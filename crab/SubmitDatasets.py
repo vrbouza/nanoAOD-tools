@@ -36,14 +36,15 @@ def GetEra(datasetName, year, isData = True):
   if not isData: return ''
   if isinstance(year, int): year = str(year)
   if len(year) == 2: year = "20%s"%year
+  #if year == 177: return "2017"
   sy = 'Run%s'%(year)
   ls = len(sy)
   find = datasetName.find(sy)
   if find == -1: return ''
   era = datasetName[find+ls:find+ls+1]
   return era
-  
 #################################################
+
 
 def GetName_cfg(datasetName, isData = False):
   ''' Returns the name of the cfg file for a given dataset '''
@@ -83,6 +84,7 @@ def GuessIsData(path):
 
 def GuessYear(path):
   if   '5TeV' in path or '5tev' in path or '5p02' in path:  return 5
+  elif 'lowpu'   in path.lower(): return 177
   elif 'Run2018' in path: return 18
   elif 'Run2017' in path: return 17
   elif 'Run2016' in path: return 16
@@ -103,6 +105,7 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   # Set according to username
   username = getpass.getuser()
   basedir = '/store/user/' + username + '/nanoAODcrab'
+  #basedir = '/store/user/rodrigvi/nanoAOD_posprocesado/2020_07_21_pruebinalowpu'
 
   # Detect if it's MC or DATA and set parameters
   strSplitting = "FileBased"; # MC
@@ -119,16 +122,19 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   slimeFileName = 'SlimFile' if not 'TnP' in options else 'SlimFileTnP'
   lumijson = ''
   
-  if(isData): 
+  if (isData):
     # Set as MC... the only way the Count histogram works!! --> So we can compare with the numbers in DAS
     # strSplitting = "LumiBased"#"Automatic" # "LumiBased";
     #crabScriptSH = 'crab_script_data.sh'
     if   year == 16:
       lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
       lumijson = 'Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
-    if   year == 17: 
+    elif year == 17:
       lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'  # 41.29/fb
       lumijson = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
+    elif year == 177:
+      lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_306896-307082_13TeV_EOY2017ReReco_Collisions17_JSON_LowPU.txt'
+      lumijson = 'Cert_306896-307082_13TeV_EOY2017ReReco_Collisions17_JSON_LowPU.txt'
     elif year == 18: 
       lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
       #'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt'
@@ -183,6 +189,8 @@ def CrateCrab_cfg(datasetName, isData = False, isTest = False, productionTag = '
   text += t_unitsperjob
   text += t_totalunits
   text += t_basedir
+  if "/USER" in datasetName:
+    text += "config.Data.inputDBS = 'https://cmsweb.cern.ch/dbs/prod/phys03/DBSReader'\n"
   text += "config.Data.publication = False\n"
   text += t_datasetTag
   text += "config.section_('Site')\n"
