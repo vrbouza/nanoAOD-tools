@@ -20,10 +20,8 @@
 #/TT_TuneCH3_13TeV-powheg-herwig7/RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20-v2/NANOAODSIM
 
 
-
 ### WWbb
 /b_bbar_4l_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18NanoAODv6-Nano25Oct2019_102X_upgrade2018_realistic_v20_ext1-v1/NANOAODSIM
-
 
 
 ### ttbar raros
